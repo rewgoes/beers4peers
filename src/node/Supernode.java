@@ -11,20 +11,27 @@ import javax.swing.JTextArea;
  * @author rafael
  */
 public class Supernode {
-
-    private final static int PACKETSIZE = 100 ;
+    
+    private JTextArea output1;
+    private JTextArea output2;
 
     static private SupernodeListenerClientThread listenBroadcast;
-    static private byte[] message;
+    
+    //Check if supernode has been initialized
+    private boolean initialized = false;
+    
+    //Initialize client by calling its threads
+    public void init() throws InterruptedException{
+        if (!initialized){
+            listenBroadcast = new SupernodeListenerClientThread(output1, output2);
 
-    public static void main(String[] args){
-        listenBroadcast = new SupernodeListenerClientThread();
-        
-        listenBroadcast.start();
+            listenBroadcast.start();
+        }
     }
 
     public Supernode(JTextArea jTextArea1, JTextArea jTextArea2) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        output1 = jTextArea1;
+        output2 = jTextArea2;
     }
     
 }

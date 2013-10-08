@@ -26,7 +26,7 @@ public class Beers4Peers extends javax.swing.JFrame {
     public Beers4Peers() throws InterruptedException, SocketException{
         initComponents();
         client = new Client(jTextArea1, jTextArea2);
-        //supernode = new Supernode(jTextArea1, jTextArea2);
+        supernode = new Supernode(jTextArea1, jTextArea2);
         control = new ButtonsControlThread(client, supernode, jButton1, jButton2, jButton3, jButton4, jButton5);
     }
     
@@ -39,7 +39,8 @@ public class Beers4Peers extends javax.swing.JFrame {
     
     public void initSupernode() throws InterruptedException, SocketException{
         jLabel1.setText("Messages [Supernode]");
-        
+        supernode.init();
+        control.start();
     }
     
     /**

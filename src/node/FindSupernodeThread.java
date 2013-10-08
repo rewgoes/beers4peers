@@ -84,15 +84,21 @@ public class FindSupernodeThread extends Thread{
                     packet = new DatagramPacket(message, message.length, broadcastAddress, broadcastPort);
                     socket.send(packet); //send broadcast packet
 
+                    socket.setSoTimeout(1000);
                     socket.receive(packet);
 
                     // Print the packet
-                    System.out.println( packet.getAddress() + " " + packet.getPort() + ": " + new String(packet.getData()) ) ;
+                    System.out.println("Control: Answer from " + packet.getAddress() + ":" + packet.getPort() + " Message: " +  new String(packet.getData(), packet.getOffset(), packet.getLength()) ) ;
                     supernode = packet.getAddress();
-
-                    synchronized (this){
-                        this.notify();
+                    
+                    if (supernode != null){
+                        System.out.println("Control: Supernode set to " + supernode);
+                        synchronized (this){
+                            this.notify();
+                        }
                     }
+                    else
+                        System.err.println("Error: Problem setting supernode");
 
                     socket.close();
                     
