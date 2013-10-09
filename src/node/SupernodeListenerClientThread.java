@@ -62,6 +62,9 @@ public class SupernodeListenerClientThread extends Thread{
 
                 // Return the packet to the sender
                 socket.send(packet);
+                
+                socket.receive(packet);
+                System.out.println("Control: I'm here");
             } catch (IOException ex) {
                 Logger.getLogger(SupernodeListenerClientThread.class.getName()).log(Level.SEVERE, null, ex);
             }

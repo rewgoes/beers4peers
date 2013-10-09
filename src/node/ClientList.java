@@ -4,6 +4,7 @@
  */
 package node;
 
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JTextArea;
@@ -12,27 +13,33 @@ import javax.swing.JTextArea;
  *
  * @author rafael
  */
+
+class clientInfo{
+    
+    public InetAddress clientAddress;
+    public int clientPort;
+    public InetAddress supernodeAddress;
+    public int supernodePort;
+    
+}
+
 public class ClientList {
     
-    private JTextArea saida2;
     private List<String> clients;
     
-    public ClientList(JTextArea s2) {
-        saida2 = s2;
+    public ClientList() {
         clients = new ArrayList<String>();
     }
     
     public void add(String message){
         synchronized (this) {
             clients.add(message);
-            showNeighbors();
         }
     }
     
     public void remove(String message){
         synchronized (this) {
             clients.remove(message);
-            showNeighbors();
         }
     }
     
@@ -45,15 +52,6 @@ public class ClientList {
     public String get(int index){
         synchronized (this) {
             return clients.get(index);
-        }
-    }
-    
-    public void showNeighbors(){
-        synchronized (this) {
-            saida2.setText(null);
-            for (String neighbor : clients) {
-                saida2.append(neighbor.toString() + "\n");
-            }
         }
     }
 
