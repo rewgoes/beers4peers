@@ -4,8 +4,9 @@
  */
 package Interface;
 
+import java.io.IOException;
 import node.Client;
-import node.Supernode;
+import supernode.Supernode;
 import java.net.SocketException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -16,31 +17,58 @@ import java.util.logging.Logger;
  */
 public class Beers4Peers extends javax.swing.JFrame {
     
-    public static final int PORT = 5000;
+    public static final int PORT = 50001;
+    public static String SERVER_ADDRESS;
+    public static int SERVER_PORT;
 
     private Client client;
     private Supernode supernode;
-    private String message;
     private ButtonsControlThread control;
+    private boolean[] buttonContol;
     
     public Beers4Peers() throws InterruptedException, SocketException{
         initComponents();
-        client = new Client(jTextArea1, jTextArea2);
-        supernode = new Supernode(jTextArea1, jTextArea2);
-        control = new ButtonsControlThread(client, supernode, jButton1, jButton2, jButton3, jButton4, jButton5);
+        
+        //Each button n is related to the position n-1 in controlButton
+        //Please, if more buttons are added, change array's size
+        buttonContol = new boolean[5];
+        
+        buttonContol[0] = true;
+        buttonContol[1] = true;
+        buttonContol[2] = false;
+        buttonContol[3] = false;
+        buttonContol[4] = false;
+        
+        
+        client = new Client(jTextArea1, jTextArea2, buttonContol);
+        supernode = new Supernode(jTextArea1, jTextArea2, buttonContol);
+        
+        control = new ButtonsControlThread(buttonContol, jButton1, jButton2, jButton3, jButton4, jButton5);
+        
+        control.start();
     }
     
-    @SuppressWarnings("empty-statement")
     public void initClient() throws InterruptedException, SocketException{
+        
         jLabel1.setText("Messages [Client]");
-        client.init();
-        control.start();
+        
+        //TODO: Remove this exception ASAP hahaha
+        try {
+            client.connect();
+        } catch (IOException ex) {
+            Logger.getLogger(Beers4Peers.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     public void initSupernode() throws InterruptedException, SocketException{
         jLabel1.setText("Messages [Supernode]");
-        supernode.init();
-        control.start();
+        
+        //TODO: Remove this exception ASAP hahaha
+        try {
+            supernode.connect();
+        } catch (IOException ex) {
+            Logger.getLogger(Beers4Peers.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     /**
@@ -201,6 +229,23 @@ public class Beers4Peers extends javax.swing.JFrame {
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
          */
+        
+        //Check if argument's port is valid to the application
+        if( args.length != 2 ){
+           System.out.println("usage: Beers4Peers address port");
+           return;
+        }
+        
+        SERVER_ADDRESS = args[0];
+        
+        // Convert the argument to ensure that is it valid
+        SERVER_PORT = Integer.parseInt(args[1]);
+        
+        if (!(SERVER_PORT >= 49152 && SERVER_PORT <= 65535)){
+            System.out.println( "usage: Beers4Peers address port [49152-65535]" );
+            return;
+        }
+        
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {

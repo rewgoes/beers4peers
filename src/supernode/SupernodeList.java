@@ -58,7 +58,11 @@ class SupernodeInfo{
     
     @Override
     public String toString(){
-        return (this.supernodeAddress.toString() + this.supernodePort);
+        
+        return (this.supernodeAddress.toString().split("/")[1]);
+        
+        //From now, the application has a unique port being used, so the port is not important
+        //return (this.supernodeAddress.toString() + this.supernodePort);
     }
 }
 

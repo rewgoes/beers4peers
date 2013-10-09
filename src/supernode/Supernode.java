@@ -1,23 +1,24 @@
-
-package node;
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package supernode;
 
 import Interface.Beers4Peers;
-import java.io.*;
-import java.net.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import javax.swing.JTextArea;
 
 /**
  *
- * @author rafael, matheus, andre
- * 
- * Class responsible the client side of the application
+ * @author rafael
  */
-public class Client {
+public class Supernode {
     
-    //Supernode responsible for this client
-    private String supernode;
-    
-    //This are the textArea in interface, use it to append messages
     private JTextArea output1;
     private JTextArea output2;
     
@@ -26,21 +27,20 @@ public class Client {
     
     //Control interface's button
     private boolean[] buttonContol;
-
-    //Return current client's supernode
-    public String getSupernode() {
-        return supernode;
-    }
     
-    //Client constructor
-    public Client(JTextArea jTextArea1, JTextArea jTextArea2, boolean[] buttonContol) {
+    //Check if supernode has been initialized
+    private boolean initialized = false;
+    
+
+    public Supernode(JTextArea jTextArea1, JTextArea jTextArea2, boolean[] buttonContol) {
         this.output1 = jTextArea1;
         this.output2 = jTextArea2;
         this.buttonContol = buttonContol;
     }
     
+    
     //Initialize client by calling its threads
-    public void connect() throws IOException{
+    public void connect() throws IOException {
         if (!connected){
             Socket connectionSocket = new Socket();
             PrintWriter out = null;
@@ -52,11 +52,11 @@ public class Client {
                 in = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
                 
             } catch (UnknownHostException ex) {
-                System.err.println("Control: Client (Don't know about host: " +
+                System.err.println("Control: Supernode (Don't know about host: " +
                         Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
                 System.exit(1);
             } catch (IOException ex) {
-                System.err.println("Control: Client (Couldn't get I/O for the connection to: " + 
+                System.err.println("Control: Supernode (Couldn't get I/O for the connection to: " + 
                         Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
                 System.exit(1);
             }
@@ -64,22 +64,15 @@ public class Client {
             String fromServer;
             String fromUser;
             
-            fromUser = "client";
+            fromUser = "supernode";
             
             out.println(fromUser);
 
             fromServer = in.readLine();
             
             if(fromServer == null)
-                ;// TODO: Undo all actions taken
+                ; // TODO: Undo all actions taken
             else {
-                supernode = fromServer;
-                
-                fromUser = "OK";
-                
-                out.println(fromUser);
-                
-                //Set client to connected
                 connected = true;
 
                 out.close();
@@ -87,10 +80,11 @@ public class Client {
                 connectionSocket.close();
 
                 output2.setText(null);
-                output2.append("Supernode:\n" + supernode + "\n");
+                output2.append("Clients:\n");
 
-                output1.append("Connected to: " + supernode + "\n");
+                output1.append("Connected to successfully\n");
             }
+            
         }
     }
     
@@ -112,3 +106,4 @@ public class Client {
     }
     
 }
+

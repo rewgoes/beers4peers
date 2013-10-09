@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package node;
+package supernode;
 
 import Interface.Beers4Peers;
 import java.io.IOException;

@@ -20,7 +20,7 @@ import static java.lang.Thread.sleep;
  *
  * @author rafael
  */
-public class FindSupernodeThread extends Thread{
+public class ClientConnectThread extends Thread{
     
     private int broadcastPort = Beers4Peers.PORT; //Port used to receive broadcast messages
     private DatagramSocket socket = null;
@@ -40,7 +40,7 @@ public class FindSupernodeThread extends Thread{
         return myAddress;
     }
     
-    public FindSupernodeThread() throws InterruptedException{
+    public ClientConnectThread() throws InterruptedException{
         //Verity possible intefaces that are not loopback
         suspend = true;
         
