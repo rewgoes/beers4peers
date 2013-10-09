@@ -52,13 +52,19 @@ public class Client {
                 in = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
                 
             } catch (UnknownHostException ex) {
-                System.err.println("Control: Client (Don't know about host: " +
+                System.err.println("Error: Client (Don't know about host: " +
                         Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
-                System.exit(1);
+                
+                output1.append("Failed to connect: Server is offline\n");
+                
+                return;
             } catch (IOException ex) {
-                System.err.println("Control: Client (Couldn't get I/O for the connection to: " + 
+                System.err.println("Error: Client (Couldn't get I/O for the connection to: " + 
                         Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
-                System.exit(1);
+                
+                output1.append("Failed to connect: Server is offline\n");
+                
+                return;
             }
 
             String fromServer;
@@ -70,9 +76,22 @@ public class Client {
 
             fromServer = in.readLine();
             
-            if(fromServer == null)
-                ;// TODO: Undo all actions taken
+            if(fromServer == null){
+                System.err.println("Error: Client (Some undefined reason)");
+                    
+                output1.append("Failed to connect: Server is offline\n");
+
+                return;
+            }
             else {
+                if (fromServer.equals("serverOff")){
+                    System.err.println("Error: Client (Supernode not found)");
+                    
+                    output1.append("Failed to connect: Server is offline\n");
+                    
+                    return;
+                }
+                    
                 supernode = fromServer;
                 
                 fromUser = "OK";
@@ -86,12 +105,16 @@ public class Client {
                 in.close();
                 connectionSocket.close();
 
+                System.out.println("Control: Client connected to " + fromServer);
+                
                 output2.setText(null);
                 output2.append("Supernode:\n" + supernode + "\n");
 
                 output1.append("Connected to: " + supernode + "\n");
             }
         }
+        
+        this.buttonsControl();
     }
     
     //Control interface's buttons

@@ -45,11 +45,16 @@ public class ServerThread extends Thread {
                         outputLine = addClient();
                     }
                     
-                    if (outputLine == null)
-                        ;// TODO: Undo all actions taken, and maybe change addClient() function, in case of error
+                    if (outputLine == null){
+                        System.err.println("Error: ServerThread (Could not add client)");// TODO: Undo all actions taken, and maybe change addClient() function, in case of error
+                        outputLine = "serverOff";
+                        out.println(outputLine);
+                    }
                     else{
                         //Send supernodes's address that is responsible for this client
                         out.println(outputLine);
+                        
+                        // TODO: advise supernode that it got a new client
 
                         //Wait for client confirmation
                         inputLine = in.readLine();
@@ -60,11 +65,11 @@ public class ServerThread extends Thread {
                                         socket.getPort() + " added to " + outputLine);
                             else{
                                 System.err.println("Error: ServerThread (Could not add client)");
-                                ;// TODO: Undo all axtions taken
+                                ;// TODO: Undo all actions taken
                             }
                         else{
                             System.err.println("Error: ServerThread (Could not add client)");
-                            ;// TODO: Undo all ations taken
+                            ;// TODO: Undo all actions taken
                         }
                     }
                 }

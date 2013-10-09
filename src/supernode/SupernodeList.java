@@ -98,6 +98,11 @@ public class SupernodeList {
         
         SupernodeInfo supernodeTemp = selectSupernode();
         
+        if (supernodeTemp == null){
+            System.err.println("Error: SupernodeList (There's no supernode connected)");
+            return null;
+        }
+        
         supernodeTemp.addClient(clientAddress, clientPort);
         
         return supernodeTemp.toString();

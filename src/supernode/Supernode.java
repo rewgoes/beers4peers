@@ -52,13 +52,19 @@ public class Supernode {
                 in = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
                 
             } catch (UnknownHostException ex) {
-                System.err.println("Control: Supernode (Don't know about host: " +
+                System.err.println("Error: Supernode (Don't know about host: " +
                         Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
-                System.exit(1);
+                
+                output1.append("Failed to connect: Server is offline\n");
+                
+                return;
             } catch (IOException ex) {
-                System.err.println("Control: Supernode (Couldn't get I/O for the connection to: " + 
+                System.err.println("Error: Supernode (Couldn't get I/O for the connection to: " + 
                         Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
-                System.exit(1);
+                
+                output1.append("Failed to connect: Server is offline\n");
+                
+                return;
             }
 
             String fromServer;
@@ -70,8 +76,13 @@ public class Supernode {
 
             fromServer = in.readLine();
             
-            if(fromServer == null)
-                ; // TODO: Undo all actions taken
+            if(fromServer == null){
+                System.err.println("Error: Supernode (Some undefined reason)");
+                    
+                output1.append("Failed to connect: Server is offline\n");
+
+                return;
+            }
             else {
                 connected = true;
 
@@ -86,6 +97,8 @@ public class Supernode {
             }
             
         }
+        
+        this.buttonsControl();
     }
     
     //Control interface's buttons
