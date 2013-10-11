@@ -1,5 +1,5 @@
 
-package node;
+package client;
 
 import Interface.Beers4Peers;
 import java.io.*;

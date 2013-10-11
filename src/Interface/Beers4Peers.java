@@ -5,7 +5,7 @@
 package Interface;
 
 import java.io.IOException;
-import node.Client;
+import client.Client;
 import supernode.Supernode;
 import java.net.SocketException;
 import java.util.logging.Level;

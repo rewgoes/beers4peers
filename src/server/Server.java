@@ -10,7 +10,6 @@ import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.util.Enumeration;
-import supernode.SupernodeList;
 
 /**
  *

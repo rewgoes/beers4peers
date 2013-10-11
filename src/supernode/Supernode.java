@@ -9,8 +9,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.net.InterfaceAddress;
+import java.net.NetworkInterface;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Enumeration;
 import javax.swing.JTextArea;
 
 /**
@@ -19,17 +24,21 @@ import javax.swing.JTextArea;
  */
 public class Supernode {
     
-    private JTextArea output1;
-    private JTextArea output2;
+    protected JTextArea output1;
+    protected JTextArea output2;
     
     //Check if client is connected
-    private boolean connected = false;
+    protected boolean connected = false;
     
     //Control interface's button
-    private boolean[] buttonContol;
+    protected boolean[] buttonContol;
     
     //Check if supernode has been initialized
-    private boolean initialized = false;
+    protected boolean initialized = false;
+    
+    protected static String myAddress;
+    
+    //TODO: Supernode: Create a list of clients
     
 
     public Supernode(JTextArea jTextArea1, JTextArea jTextArea2, boolean[] buttonContol) {
@@ -38,13 +47,12 @@ public class Supernode {
         this.buttonContol = buttonContol;
     }
     
-    
     //Initialize client by calling its threads
     public void connect() throws IOException {
         if (!connected){
-            Socket connectionSocket = new Socket();
-            PrintWriter out = null;
-            BufferedReader in = null;
+            Socket connectionSocket;
+            PrintWriter out;
+            BufferedReader in;
 
             try {
                 connectionSocket = new Socket(Beers4Peers.SERVER_ADDRESS, Beers4Peers.SERVER_PORT);
@@ -93,16 +101,18 @@ public class Supernode {
                 output2.setText(null);
                 output2.append("Clients:\n");
 
-                output1.append("Connected to successfully\n");
+                output1.append("Connected to server successfully\n");
             }
-            
         }
+        
+        listenTCPconnections();
+        //SupernodeUDPCheckAlive udpAlive = new SupernodeUDPCheckAlive(this);
         
         this.buttonsControl();
     }
     
     //Control interface's buttons
-    private void buttonsControl(){
+    protected void buttonsControl(){
         if(connected){
             buttonContol[0] = false;
             buttonContol[1] = false;
@@ -115,6 +125,67 @@ public class Supernode {
             buttonContol[2] = false;
             buttonContol[3] = false;
             buttonContol[4] = false;
+        }
+    }
+    
+    //This method only gets the supernodes local address
+    protected static void getAddress(){
+        try {
+            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            while (interfaces.hasMoreElements()) {
+                NetworkInterface networkInterface = interfaces.nextElement();
+                if (networkInterface.isLoopback())
+                    continue;    // Don't want to broadcast to the loopback interface
+                // If not loopback, get its broadcast address
+                for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
+                    InetAddress broadcast = interfaceAddress.getBroadcast();
+                    if (broadcast == null)
+                        continue;
+                    else{
+                        myAddress = interfaceAddress.getAddress().getHostAddress();
+                    }
+                }
+            }
+            if (myAddress == null){
+                System.err.println("Error: Server (There's no connection)");
+                System.exit(1);
+            }
+        } catch (Exception ex) {
+            System.err.println("Error: Server (Could not retrieve address): " + ex.getMessage());
+            System.exit(1);
+        }
+    }
+
+    protected void listenTCPconnections() {
+        ServerSocket supernodeSocket = null;
+        boolean listening = true;
+            
+        try {
+            //Create a new socket at the port passed as argument
+            supernodeSocket = new ServerSocket(Beers4Peers.PORT);
+            System.out.println("Control: Supernode created at " + myAddress);
+        } catch (IOException ex) {
+            System.err.println("Error: Supernode (Could not listen on port: " + Beers4Peers.PORT + "): " + ex.getMessage());
+            System.exit(1);
+        }
+        
+        while(listening){
+            try {
+                //Wait for connection, and when one starts, it starts a new thread
+                new SupernodeTCPListenerThread(supernodeSocket.accept(), this).start();
+    
+                System.out.println("Control: Listening for commands at port " + Beers4Peers.PORT);
+            } catch (IOException ex) {
+                System.err.println("Error: Supernode (Accept failed): " + ex.getMessage());
+                System.exit(1);
+            }
+        }
+        
+        try {
+            supernodeSocket.close();
+        } catch (IOException ex) {
+            System.err.println("Error: Server (Could close socket): " + ex.getMessage());
+            System.exit(1);
         }
     }
     

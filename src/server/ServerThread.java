@@ -6,7 +6,6 @@ package server;
 
 import java.io.*;
 import java.net.*;
-import supernode.SupernodeList;
 
 /**
  *
@@ -14,7 +13,7 @@ import supernode.SupernodeList;
  */
 public class ServerThread extends Thread {
     
-    private Socket socket = null;
+    private Socket socket;
     private SupernodeList supernodeList;
  
     public ServerThread(Socket socket, SupernodeList supernodeList) throws IOException {
@@ -101,11 +100,11 @@ public class ServerThread extends Thread {
     }
     
     public String addClient(){
-        return supernodeList.addClient(socket.getInetAddress(), socket.getPort());
+        return supernodeList.addClient(socket.getInetAddress().toString().split("/")[1], socket.getPort());
     }
     
     public void addSupernode(){
-        supernodeList.addSupernode(socket.getInetAddress(), socket.getPort());
+        supernodeList.addSupernode(socket.getInetAddress().toString().split("/")[1], socket.getPort());
     }
 
     
