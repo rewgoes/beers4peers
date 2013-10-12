@@ -89,6 +89,9 @@ public class ServerThread extends Thread {
                     
                 }
             }
+            else {
+                System.err.println("Error: ServerThread (Could not add client)");
+            }
             
             out.close();
             in.close();

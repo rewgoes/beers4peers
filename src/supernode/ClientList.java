@@ -30,6 +30,11 @@ class ClientInfo{
         }
         return false;
     }
+    
+    @Override
+    public String toString(){
+        return clientAddress;
+    }
 }
 
 public class ClientList {
@@ -52,6 +57,10 @@ public class ClientList {
                 return true;
         }          
         return false;
+    }
+    
+    public String get(int i){
+        return this.clients.get(i).toString();
     }
     
     public int size(){

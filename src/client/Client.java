@@ -39,15 +39,16 @@ public class Client {
         this.buttonContol = buttonContol;
     }
     
-    //Initialize client by calling its threads
+    //Initialize client by calling its threads and connect to server, finding a supernode
     public void connect() throws IOException{
         if (!connected){
-            Socket connectionSocket = new Socket();
-            PrintWriter out = null;
-            BufferedReader in = null;
+            Socket connectionSocket;
+            PrintWriter out;
+            BufferedReader in;
 
             try {
-                connectionSocket = new Socket(Beers4Peers.SERVER_ADDRESS, Beers4Peers.SERVER_PORT);
+                connectionSocket = new Socket();
+                connectionSocket.connect(new InetSocketAddress(Beers4Peers.SERVER_ADDRESS, Beers4Peers.SERVER_PORT), 1000);
                 out = new PrintWriter(connectionSocket.getOutputStream(), true);
                 in = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
                 
@@ -100,6 +101,7 @@ public class Client {
                 
                 //Set client to connected
                 connected = true;
+                this.buttonsControl();
 
                 out.close();
                 in.close();
@@ -113,8 +115,6 @@ public class Client {
                 output1.append("Connected to: " + supernode + "\n");
             }
         }
-        
-        this.buttonsControl();
     }
     
     //Control interface's buttons
@@ -126,8 +126,8 @@ public class Client {
             buttonContol[3] = true;
             buttonContol[4] = true;
         } else {
-            buttonContol[0] = true;
-            buttonContol[1] = true;
+            buttonContol[0] = false;
+            buttonContol[1] = false;
             buttonContol[2] = false;
             buttonContol[3] = false;
             buttonContol[4] = false;

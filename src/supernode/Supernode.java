@@ -10,9 +10,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
@@ -39,12 +39,14 @@ public class Supernode {
     protected static String myAddress;
     
     //TODO: Supernode: Create a list of clients
+    protected ClientList clientList;
     
 
     public Supernode(JTextArea jTextArea1, JTextArea jTextArea2, boolean[] buttonContol) {
         this.output1 = jTextArea1;
         this.output2 = jTextArea2;
         this.buttonContol = buttonContol;
+        this.clientList = new ClientList();
     }
     
     //Initialize client by calling its threads
@@ -55,7 +57,8 @@ public class Supernode {
             BufferedReader in;
 
             try {
-                connectionSocket = new Socket(Beers4Peers.SERVER_ADDRESS, Beers4Peers.SERVER_PORT);
+                connectionSocket = new Socket();
+                connectionSocket.connect(new InetSocketAddress(Beers4Peers.SERVER_ADDRESS, Beers4Peers.SERVER_PORT), 1000);
                 out = new PrintWriter(connectionSocket.getOutputStream(), true);
                 in = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
                 
@@ -93,6 +96,7 @@ public class Supernode {
             }
             else {
                 connected = true;
+                this.buttonsControl();
 
                 out.close();
                 in.close();
@@ -105,10 +109,10 @@ public class Supernode {
             }
         }
         
-        listenTCPconnections();
-        //SupernodeUDPCheckAlive udpAlive = new SupernodeUDPCheckAlive(this);
+        this.getAddress();
         
-        this.buttonsControl();
+        new TCPListener(this).start();
+        //SupernodeUDPCheckAlive udpAlive = new SupernodeUDPCheckAlive(this);
     }
     
     //Control interface's buttons
@@ -120,8 +124,8 @@ public class Supernode {
             buttonContol[3] = true;
             buttonContol[4] = true;
         } else {
-            buttonContol[0] = true;
-            buttonContol[1] = true;
+            buttonContol[0] = false;
+            buttonContol[1] = false;
             buttonContol[2] = false;
             buttonContol[3] = false;
             buttonContol[4] = false;
@@ -155,37 +159,13 @@ public class Supernode {
             System.exit(1);
         }
     }
-
-    protected void listenTCPconnections() {
-        ServerSocket supernodeSocket = null;
-        boolean listening = true;
-            
-        try {
-            //Create a new socket at the port passed as argument
-            supernodeSocket = new ServerSocket(Beers4Peers.PORT);
-            System.out.println("Control: Supernode created at " + myAddress);
-        } catch (IOException ex) {
-            System.err.println("Error: Supernode (Could not listen on port: " + Beers4Peers.PORT + "): " + ex.getMessage());
-            System.exit(1);
-        }
-        
-        while(listening){
-            try {
-                //Wait for connection, and when one starts, it starts a new thread
-                new SupernodeTCPListenerThread(supernodeSocket.accept(), this).start();
     
-                System.out.println("Control: Listening for commands at port " + Beers4Peers.PORT);
-            } catch (IOException ex) {
-                System.err.println("Error: Supernode (Accept failed): " + ex.getMessage());
-                System.exit(1);
-            }
-        }
+    //List all clients on the interface
+    protected void listClients() {
+        output2.setText("Clients:\n");
         
-        try {
-            supernodeSocket.close();
-        } catch (IOException ex) {
-            System.err.println("Error: Server (Could close socket): " + ex.getMessage());
-            System.exit(1);
+        for(int i = 0; i < clientList.size(); i++) {
+            output2.append(" " + clientList.get(i) + "\n");
         }
     }
     

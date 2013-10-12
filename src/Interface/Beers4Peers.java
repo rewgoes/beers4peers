@@ -50,22 +50,21 @@ public class Beers4Peers extends javax.swing.JFrame {
     
     public void initClient() throws InterruptedException, SocketException{
         
-        jLabel1.setText("Messages [Client]");
-        
-        //TODO: Remove this exception ASAP hahaha
         try {
             client.connect();
+            if (!buttonContol[0])
+                jLabel1.setText("Messages [Client]");
         } catch (IOException ex) {
             Logger.getLogger(Beers4Peers.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
     public void initSupernode() throws InterruptedException, SocketException{
-        jLabel1.setText("Messages [Supernode]");
         
-        //TODO: Remove this exception ASAP hahaha
         try {
             supernode.connect();
+            if (!buttonContol[0])
+                jLabel1.setText("Messages [Supernode]");
         } catch (IOException ex) {
             Logger.getLogger(Beers4Peers.class.getName()).log(Level.SEVERE, null, ex);
         }

@@ -51,6 +51,7 @@ class SupernodeInfo{
         clients.add(clientAddress, clientPort);
     }
     
+    //Return the supernode with less clients
     public boolean lessBusy(SupernodeInfo supernode){
         return this.clientQtd() < supernode.clientQtd();
     }
@@ -58,7 +59,7 @@ class SupernodeInfo{
     @Override
     public String toString(){
         
-        return (this.supernodeAddress.toString().split("/")[1]);
+        return (this.supernodeAddress);
         
         //From now, the application has a unique port being used, so the port is not important
         //return (this.supernodeAddress.toString() + this.supernodePort);
@@ -68,11 +69,9 @@ class SupernodeInfo{
 public class SupernodeList {
  
     private List<SupernodeInfo> supernodes;
-    private int maxClientQtt;
     
     public SupernodeList(){
         this.supernodes = new ArrayList<SupernodeInfo>();
-        this.maxClientQtt = 0;
     }
     
     //Add a new supernode to the application
@@ -82,6 +81,8 @@ public class SupernodeList {
         // TODO: Implement a new funcion to split clients
     }
     
+    
+    //Check if the supernode already exists
     public boolean containsSupernode(String supernodeAddress, int port){
         for(Iterator<SupernodeInfo> i = supernodes.iterator(); i.hasNext(); ) {
             SupernodeInfo supernode = i.next();
@@ -93,8 +94,6 @@ public class SupernodeList {
     
     //Add client to the best supernode at the moment and return supernodes's address:port
     public String addClient(String clientAddress, int clientPort){
-        this.maxClientQtt++;
-        
         SupernodeInfo supernode;
         
         orderSupernodes();
@@ -109,7 +108,6 @@ public class SupernodeList {
             } catch (IOException ex) {
                 System.err.println("Error: Server: " + ex.getMessage());
             }
-                
         } 
         
         return null;
@@ -119,8 +117,6 @@ public class SupernodeList {
     public void orderSupernodes(){
         
         SupernodeInfo supernodeTemp;
-        
-        int tempQtd = maxClientQtt;
         
         for(int i = 0; i < supernodes.size() - 1; i++) {
             if (supernodes.get(i+1).lessBusy(supernodes.get(i))){
