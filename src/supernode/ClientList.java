@@ -24,8 +24,8 @@ class ClientInfo{
     }
  
     //Compares two supernodes
-    public boolean equals(String supernodeAddress, int supernodePort) {
-        if (this.clientAddress.equals(supernodeAddress) && this.clientPort == supernodePort){
+    public boolean equals(String supernodeAddress) {
+        if (this.clientAddress.equals(supernodeAddress)){
             return true;
         }
         return false;
@@ -50,10 +50,10 @@ public class ClientList {
         clients.add(new ClientInfo(clientAddress, clientPort));
     }
     
-    public boolean contains(String supernodeAddress, int port){
+    public boolean contains(String supernodeAddress){
         for(Iterator<ClientInfo> i = clients.iterator(); i.hasNext(); ) {
             ClientInfo client = i.next();
-            if (client.equals(supernodeAddress, port))
+            if (client.equals(supernodeAddress))
                 return true;
         }          
         return false;

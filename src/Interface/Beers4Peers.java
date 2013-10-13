@@ -6,10 +6,12 @@ package Interface;
 
 import java.io.IOException;
 import client.Client;
+import java.io.File;
 import supernode.Supernode;
 import java.net.SocketException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JFileChooser;
 
 /**
  *
@@ -25,6 +27,9 @@ public class Beers4Peers extends javax.swing.JFrame {
     private Supernode supernode;
     private ButtonsControlThread control;
     private boolean[] buttonContol;
+    
+    private String type;
+    
     
     public Beers4Peers() throws InterruptedException, SocketException{
         initComponents();
@@ -54,6 +59,7 @@ public class Beers4Peers extends javax.swing.JFrame {
             client.connect();
             if (!buttonContol[0])
                 jLabel1.setText("Messages [Client]");
+            type = "client";
         } catch (IOException ex) {
             Logger.getLogger(Beers4Peers.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -65,6 +71,7 @@ public class Beers4Peers extends javax.swing.JFrame {
             supernode.connect();
             if (!buttonContol[0])
                 jLabel1.setText("Messages [Supernode]");
+            type = "supernode";
         } catch (IOException ex) {
             Logger.getLogger(Beers4Peers.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -79,6 +86,10 @@ public class Beers4Peers extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jFileChooser1 = new javax.swing.JFileChooser();
+        jFileChooser2 = new javax.swing.JFileChooser();
+        jFileChooser3 = new javax.swing.JFileChooser();
+        jFileChooser4 = new javax.swing.JFileChooser();
         jButton1 = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
@@ -125,6 +136,11 @@ public class Beers4Peers extends javax.swing.JFrame {
 
         jButton3.setText("Upload");
         jButton3.setEnabled(false);
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton3ActionPerformed(evt);
+            }
+        });
 
         jButton4.setText("Download");
         jButton4.setEnabled(false);
@@ -219,6 +235,19 @@ public class Beers4Peers extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_jButton4ActionPerformed
 
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+        // TODO add your handling code here:
+        JFileChooser fc = new JFileChooser();
+        fc.showOpenDialog(null);
+        File f = fc.getSelectedFile();
+        
+        String filename = f.getAbsolutePath();
+        
+        if (filename != null)
+            client.newFile(filename);
+            
+    }//GEN-LAST:event_jButton3ActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -283,6 +312,10 @@ public class Beers4Peers extends javax.swing.JFrame {
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
     private javax.swing.JButton jButton5;
+    private javax.swing.JFileChooser jFileChooser1;
+    private javax.swing.JFileChooser jFileChooser2;
+    private javax.swing.JFileChooser jFileChooser3;
+    private javax.swing.JFileChooser jFileChooser4;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane2;

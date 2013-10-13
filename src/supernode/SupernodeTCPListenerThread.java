@@ -31,8 +31,18 @@ public class SupernodeTCPListenerThread extends Thread{
     }
 
     private void messagesIntepreter() {
-        if (socket.getInetAddress().toString().split("/")[1].equals(Beers4Peers.SERVER_ADDRESS));
-            receiveClientFromServer();    
+        if (socket.getInetAddress().toString().split("/")[1].equals(Beers4Peers.SERVER_ADDRESS)){
+            System.out.println("Control: New request from server");
+            receiveClientFromServer();
+        }
+        else
+            if (supernode.clientList.contains(socket.getInetAddress().toString().split("/")[1])){
+                System.out.println("Control: New request from client");
+                receiveClientsMessage(socket.getInetAddress().toString().split("/")[1]);
+            }
+            else
+                ;
+                // TODO: unknown client
     }
 
     //Receive a connection of a client from server, adding this client to its list
@@ -60,9 +70,47 @@ public class SupernodeTCPListenerThread extends Thread{
                 supernode.output1.append("Client " + inputLine + " to server successfully\n");
             }
 
+            in.close();
+            out.close();
             
         } catch (IOException ex) {
             System.err.println("Error: ServerThread (Problem reading or writing in socket): " + ex.getMessage());
         }  
+    }
+
+    private void receiveClientsMessage(String clitenAddress) {
+        try {            
+            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+            BufferedReader in = new BufferedReader(
+                        new InputStreamReader(
+                        socket.getInputStream()));
+            
+            String inputLine, outputLine;
+            
+            //TODO: SupernodeTCPListenerThread: Answer server, accepting client
+            inputLine = in.readLine();
+            
+            if(inputLine != null){
+                if (inputLine.equals("upload")){
+                    inputLine = in.readLine();
+                
+                    if(inputLine != null){
+                        supernode.files.put(inputLine, clitenAddress);
+                    }
+                }
+                
+                outputLine = "OK";
+                
+                out.println(outputLine);
+                
+                supernode.output1.append("New file from " + clitenAddress + " added: " + inputLine + "\n");
+            }
+            
+            in.close();
+            out.close();
+            
+        } catch (IOException ex) {
+            System.err.println("Error: ServerThread (Problem reading or writing in socket): " + ex.getMessage());
+        }
     }
 }

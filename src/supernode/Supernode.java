@@ -16,6 +16,7 @@ import java.net.NetworkInterface;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
+import java.util.Hashtable;
 import javax.swing.JTextArea;
 
 /**
@@ -41,12 +42,16 @@ public class Supernode {
     //TODO: Supernode: Create a list of clients
     protected ClientList clientList;
     
+    //Hashtable of files
+    protected Hashtable<String, String> files;
+    
 
     public Supernode(JTextArea jTextArea1, JTextArea jTextArea2, boolean[] buttonContol) {
         this.output1 = jTextArea1;
         this.output2 = jTextArea2;
         this.buttonContol = buttonContol;
         this.clientList = new ClientList();
+        this.files = new Hashtable<String, String>();
     }
     
     //Initialize client by calling its threads
@@ -120,8 +125,8 @@ public class Supernode {
         if(connected){
             buttonContol[0] = false;
             buttonContol[1] = false;
-            buttonContol[2] = true;
-            buttonContol[3] = true;
+            buttonContol[2] = false;
+            buttonContol[3] = false;
             buttonContol[4] = true;
         } else {
             buttonContol[0] = false;
