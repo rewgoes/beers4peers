@@ -37,10 +37,10 @@ public class TCPListener extends Thread{
         
         while(listening){
             try {
+                System.out.println("Control: Listening for commands at port " + Beers4Peers.PORT);
+                
                 //Wait for connection, and when one starts, it starts a new thread
                 new SupernodeTCPListenerThread(supernodeSocket.accept(), supernode).start();
-    
-                System.out.println("Control: Listening for commands at port " + Beers4Peers.PORT);
             } catch (IOException ex) {
                 System.err.println("Error: Supernode (Accept failed): " + ex.getMessage());
                 System.exit(1);
