@@ -148,11 +148,11 @@ public class Client {
         PrintWriter out;
         BufferedReader in;
         
-        System.out.println("Control: Trying to add file " + filename);
+        System.out.println("Control: Trying to add file " + filename + " to " + this.supernode);
 
         try {
             connectionSocket = new Socket();
-            connectionSocket.connect(new InetSocketAddress(this.supernode, Beers4Peers.SERVER_PORT), 1000);
+            connectionSocket.connect(new InetSocketAddress(this.supernode, Beers4Peers.PORT), 1000);
             out = new PrintWriter(connectionSocket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
             

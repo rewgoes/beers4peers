@@ -47,8 +47,8 @@ class SupernodeInfo{
         return clients.size();
     }
     
-    public void addClient(String clientAddress, int clientPort){
-        clients.add(clientAddress, clientPort);
+    public void addClient(String clientAddress){
+        clients.add(clientAddress);
     }
     
     //Return the supernode with less clients
@@ -102,7 +102,7 @@ public class SupernodeList {
             supernode = i.next();
             try {
                 if(supernodeAvailableToClient(supernode.toString(), clientAddress)){
-                    supernode.addClient(clientAddress, clientPort);
+                    supernode.addClient(clientAddress);
                     return supernode.toString();
                 }
             } catch (IOException ex) {

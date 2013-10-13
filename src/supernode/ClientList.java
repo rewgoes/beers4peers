@@ -16,11 +16,9 @@ import java.util.List;
 class ClientInfo{
     
     private String clientAddress;
-    private int clientPort;
     
-    public ClientInfo (String clientAddress, int clientPort){
+    public ClientInfo (String clientAddress){
         this.clientAddress = clientAddress;
-        this.clientPort = clientPort;
     }
  
     //Compares two supernodes
@@ -46,8 +44,8 @@ public class ClientList {
     }
     
     //Add a new supernode to the application
-    public void add(String clientAddress, int clientPort){
-        clients.add(new ClientInfo(clientAddress, clientPort));
+    public void add(String clientAddress){
+        clients.add(new ClientInfo(clientAddress));
     }
     
     public boolean contains(String supernodeAddress){

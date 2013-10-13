@@ -40,9 +40,9 @@ public class SupernodeTCPListenerThread extends Thread{
                 System.out.println("Control: New request from client");
                 receiveClientsMessage(socket.getInetAddress().toString().split("/")[1]);
             }
-            else
-                ;
-                // TODO: unknown client
+            else{
+                System.out.println("Control: Unknown client");
+            }
     }
 
     //Receive a connection of a client from server, adding this client to its list
@@ -59,7 +59,7 @@ public class SupernodeTCPListenerThread extends Thread{
             inputLine = in.readLine();
             
             if(inputLine != null){
-                supernode.clientList.add(inputLine, Beers4Peers.PORT);
+                supernode.clientList.add(inputLine);
                 
                 outputLine = "OK";
                 
