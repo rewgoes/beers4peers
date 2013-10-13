@@ -159,10 +159,9 @@ public class Client {
             String fromServer;
             String fromUser;
 
-            fromUser = "upload";
+            fromUser = "upload\n" + filename;
             
             out.println(fromUser);
-            out.println(filename);
             
             System.out.println("Control: Waiting supernode confirmation " + filename);
             

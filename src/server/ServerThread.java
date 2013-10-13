@@ -15,6 +15,9 @@ public class ServerThread extends Thread {
     
     private Socket socket;
     private SupernodeList supernodeList;
+    private PrintWriter out;
+    private BufferedReader in;
+    private String inputLine, outputLine;
  
     public ServerThread(Socket socket, SupernodeList supernodeList) throws IOException {
         this.socket = socket;
@@ -25,8 +28,8 @@ public class ServerThread extends Thread {
     public void run() {
  
         try {
-            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-            BufferedReader in = new BufferedReader(
+            out = new PrintWriter(socket.getOutputStream(), true);
+            in = new BufferedReader(
                         new InputStreamReader(
                         socket.getInputStream()));
 
@@ -37,56 +40,21 @@ public class ServerThread extends Thread {
             System.out.println("Control: Message from " + socket.getInetAddress() + ":" + 
                     socket.getPort() + " content: " + inputLine);
             
+            //Verify message
             if(inputLine != null){
-                if (inputLine.equals("client")){
-                    //It must be synchronized as it changes the control list
-                    synchronized(this){
-                        outputLine = addClient();
-                    }
-                    
-                    if (outputLine == null){
-                        System.err.println("Error: ServerThread (Could not add client)");// TODO: Undo all actions taken, and maybe change addClient() function, in case of error
-                        outputLine = "serverOff";
-                        out.println(outputLine);
-                    }
-                    else{
-                        //Send supernodes's address that is responsible for this client
-                        out.println(outputLine);
-                        
-                        // TODO: advise supernode that it got a new client
-
-                        //Wait for client confirmation
-                        inputLine = in.readLine();
-                        if(inputLine != null)
-                            if (inputLine.equals("OK"))
-                                //Success
-                                System.out.println("Control: Client " + socket.getInetAddress().toString().split("/")[1] + ":" +
-                                        socket.getPort() + " added to " + outputLine);
-                            else{
-                                System.err.println("Error: ServerThread (Could not add client)");
-                                ;// TODO: Undo all actions taken
-                            }
-                        else{
-                            System.err.println("Error: ServerThread (Could not add client)");
-                            ;// TODO: Undo all actions taken
-                        }
-                    }
-                }
-                else if (inputLine.equals("supernode")){
-                    //It must be synchronized as it changes the control list
-                    synchronized(this){
-                        addSupernode();
-                        ;// TODO: Undo all actions taken, and maybe change addSupernode() function, in case of error
-                    }
-                    
-                    //Send confirmation to supernode
-                    outputLine = "OK";
-                    out.println(outputLine);
-
-                    //Success
-                    System.out.println("Control: Supernode " + socket.getInetAddress().toString().split("/")[1] + ":" +
-                            socket.getPort() + " added");
-                    
+                switch (inputLine) {
+                    case "client":
+                        connectClient();
+                        break;
+                    case "supernode":
+                        connectSupernode();
+                        break;
+                    case "disconectClient":
+                        disconnectClient();
+                        break;
+                    case "disconectSupernode":
+                        disconnectSupernode();
+                        break;
                 }
             }
             else {
@@ -108,6 +76,63 @@ public class ServerThread extends Thread {
     
     public void addSupernode(){
         supernodeList.addSupernode(socket.getInetAddress().toString().split("/")[1], socket.getPort());
+    }
+
+    private void connectClient() throws IOException {
+        //It must be synchronized as it changes the control list
+        synchronized(this){
+            outputLine = addClient();
+        }
+
+        if (outputLine == null){
+            System.err.println("Error: ServerThread (Could not add client)");// TODO: Undo all actions taken, and maybe change addClient() function, in case of error
+            outputLine = "serverOff";
+            out.println(outputLine);
+        }
+        else{
+            //Send supernodes's address that is responsible for this client
+            out.println(outputLine);
+
+            // TODO: advise supernode that it got a new client
+
+            //Wait for client confirmation
+            inputLine = in.readLine();
+            if(inputLine != null)
+                if (inputLine.equals("OK"))
+                    //Success
+                    System.out.println("Control: Client " + socket.getInetAddress().toString().split("/")[1] + ":" +
+                            socket.getPort() + " added to " + outputLine);
+                else{
+                    System.err.println("Error: ServerThread (Could not add client)");
+                    ;// TODO: Undo all actions taken
+                }
+            else{
+                System.err.println("Error: ServerThread (Could not add client)");
+                ;// TODO: Undo all actions taken
+            }
+        }
+    }
+
+    private void connectSupernode() {
+        //It must be synchronized as it changes the control list
+        synchronized(this){
+            addSupernode();
+            ;// TODO: Undo all actions taken, and maybe change addSupernode() function, in case of error
+        }
+
+        //Send confirmation to supernode
+        outputLine = "OK";
+        out.println(outputLine);
+
+        //Success
+        System.out.println("Control: Supernode " + socket.getInetAddress().toString().split("/")[1] + ":" +
+                socket.getPort() + " added");
+    }
+
+    private void disconnectClient() {
+    }
+
+    private void disconnectSupernode() {
     }
 
     
