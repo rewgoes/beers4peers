@@ -64,5 +64,14 @@ public class ClientList {
     public int size(){
         return clients.size();
     }
+
+    public void removeClient(String client) {
+        
+        for(Iterator<ClientInfo> i = clients.iterator(); i.hasNext(); ) {
+            ClientInfo clientTemp = i.next();
+            if (clientTemp.equals(client));
+                clients.remove(clientTemp);
+        }
+    }
     
 }

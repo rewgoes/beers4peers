@@ -255,6 +255,23 @@ public class Beers4Peers extends javax.swing.JFrame {
 
     private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
         // TODO add your handling code here:
+        try {
+            if (jButton5.getText().equals("Connect")){
+                jButton5.setText("Disconnect");
+                if (type.equals("client"))
+                    client.connect();
+                else
+                    supernode.connect();
+            } else {
+                jButton5.setText("Connect");
+                if (type.equals("client"))
+                    client.disconnect();
+                else
+                    supernode.disconnect();
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(Beers4Peers.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_jButton5ActionPerformed
 
     /**

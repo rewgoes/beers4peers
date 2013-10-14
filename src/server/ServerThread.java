@@ -49,10 +49,10 @@ public class ServerThread extends Thread {
                     case "supernode":
                         connectSupernode();
                         break;
-                    case "disconectClient":
+                    case "disconnectClient":
                         disconnectClient();
                         break;
-                    case "disconectSupernode":
+                    case "disconnectSupernode":
                         disconnectSupernode();
                         break;
                 }
@@ -69,19 +69,11 @@ public class ServerThread extends Thread {
             System.err.println("Error: ServerThread (Problem reading or writing in socket): " + ex.getMessage());
         }
     }
-    
-    public String addClient(){
-        return supernodeList.addClient(socket.getInetAddress().toString().split("/")[1], socket.getPort());
-    }
-    
-    public void addSupernode(){
-        supernodeList.addSupernode(socket.getInetAddress().toString().split("/")[1], socket.getPort());
-    }
 
     private void connectClient() throws IOException {
         //It must be synchronized as it changes the control list
         synchronized(this){
-            outputLine = addClient();
+            outputLine = supernodeList.addClient(socket.getInetAddress().toString().split("/")[1], socket.getPort());
         }
 
         if (outputLine == null){
@@ -116,7 +108,7 @@ public class ServerThread extends Thread {
     private void connectSupernode() {
         //It must be synchronized as it changes the control list
         synchronized(this){
-            addSupernode();
+            supernodeList.addSupernode(socket.getInetAddress().toString().split("/")[1], socket.getPort());
             ;// TODO: Undo all actions taken, and maybe change addSupernode() function, in case of error
         }
 
@@ -129,7 +121,18 @@ public class ServerThread extends Thread {
                 socket.getPort() + " added");
     }
 
-    private void disconnectClient() {
+    private void disconnectClient() throws IOException {
+        
+        String client = in.readLine();
+        String supernode = socket.getInetAddress().toString().split("/")[1];
+        
+        supernodeList.removeClient(supernode, client);
+        
+        System.out.println("Control: Client " + client + " disconnected");
+        
+        //Send confirmation to supernode
+        outputLine = "OK";
+        out.println(outputLine);
     }
 
     private void disconnectSupernode() {

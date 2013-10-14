@@ -86,8 +86,6 @@ public class Client {
                 System.err.println("Error: Client (Some undefined reason)");
                     
                 output1.append("Failed to connect: Server is offline\n");
-
-                return;
             }
             else {
                 if (fromServer.equals("serverOff")){
@@ -178,16 +176,57 @@ public class Client {
                     Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
 
             output1.append("Failed to connect: Failed to send file\n");
-
-            return;
         } catch (IOException ex) {
             System.err.println("Error: Client (Couldn't get I/O for the connection to: " + 
                     Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
 
             output1.append("Failed to connect: Faile to send file\n");
-
-            return;
         }
+    }
+
+    public void disconnect() {
+        Socket connectionSocket;
+        PrintWriter out;
+        BufferedReader in;
+        
+        System.out.println("Control: Trying to disconnect");
+
+        try {
+            connectionSocket = new Socket();
+            connectionSocket.connect(new InetSocketAddress(this.supernode, Beers4Peers.PORT), 1000);
+            out = new PrintWriter(connectionSocket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+            
+            String fromServer;
+            String fromUser;
+
+            fromUser = "disconnectClient";
+            
+            out.println(fromUser);
+            
+            fromServer = in.readLine();
+            
+            //Supernode received file
+            if(fromServer != null){
+                output1.append("Disconnected\n");
+            }
+            
+            supernode = null;
+            files = null;
+            output2.setText(null);
+            
+        } catch (UnknownHostException ex) {
+            System.err.println("Error: Client (Don't know about host: " +
+                    Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
+
+            output1.append("Failed to connect: Failed to disconnect\n");
+        } catch (IOException ex) {
+            System.err.println("Error: Client (Couldn't get I/O for the connection to: " + 
+                    Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
+
+            output1.append("Failed to connect: Faile to disconnect\n");
+        }
+        
     }
     
 }

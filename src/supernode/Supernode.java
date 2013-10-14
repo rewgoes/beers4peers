@@ -44,6 +44,8 @@ public class Supernode {
     
     //Hashtable of files
     protected Hashtable<String, String> files;
+            
+    private TCPListener tcpListener;
     
 
     public Supernode(JTextArea jTextArea1, JTextArea jTextArea2, boolean[] buttonContol) {
@@ -52,6 +54,7 @@ public class Supernode {
         this.buttonContol = buttonContol;
         this.clientList = new ClientList();
         this.files = new Hashtable<String, String>();
+        
     }
     
     //Initialize client by calling its threads
@@ -116,7 +119,8 @@ public class Supernode {
         
         this.getAddress();
         
-        new TCPListener(this).start();
+        tcpListener = new TCPListener(this);
+        tcpListener.start();
         //SupernodeUDPCheckAlive udpAlive = new SupernodeUDPCheckAlive(this);
     }
     
@@ -133,7 +137,7 @@ public class Supernode {
             buttonContol[1] = false;
             buttonContol[2] = false;
             buttonContol[3] = false;
-            buttonContol[4] = false;
+            buttonContol[4] = true;
         }
     }
     
@@ -171,6 +175,54 @@ public class Supernode {
         
         for(int i = 0; i < clientList.size(); i++) {
             output2.append(" " + clientList.get(i) + "\n");
+        }
+    }
+
+    public void disconnect(){ 
+        Socket connectionSocket;
+        PrintWriter out;
+        BufferedReader in;
+        
+        System.out.println("Control: Trying to disconnect");
+
+        try {
+            connectionSocket = new Socket();
+            connectionSocket.connect(new InetSocketAddress(Beers4Peers.SERVER_ADDRESS, Beers4Peers.SERVER_PORT), 1000);
+            out = new PrintWriter(connectionSocket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+            
+            String fromServer;
+            String fromUser;
+
+            fromUser = "disconnectSupernode";
+            
+            out.println(fromUser);
+            
+            fromServer = in.readLine();
+            
+            //Supernode received file
+            if(fromServer != null){
+                output1.append("Disconnected\n");
+            }
+            
+            files = null;
+            output2.setText(null);
+            
+            connected = false;
+            buttonsControl();
+        
+            tcpListener.closeSocket();
+            
+        } catch (UnknownHostException ex) {
+            System.err.println("Error: Client (Don't know about host: " +
+                    Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
+
+            output1.append("Failed to connect: Failed to disconnect\n");
+        } catch (IOException ex) {
+            System.err.println("Error: Client (Couldn't get I/O for the connection to: " + 
+                    Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
+
+            output1.append("Failed to connect: Faile to disconnect\n");
         }
     }
     

@@ -23,21 +23,20 @@ import supernode.ClientList;
  */
 
 //Class that holds all the supernode information in server
+
 class SupernodeInfo{
     
     private ClientList clients;
     private String supernodeAddress;
-    private int supernodePort;
     
-    public SupernodeInfo (String supernodeAddress, int supernodePort){
+    public SupernodeInfo (String supernodeAddress){
         this.supernodeAddress = supernodeAddress;
-        this.supernodePort = supernodePort;
         this.clients = new ClientList();
     }
     
     //Compares two supernodes
-    public boolean equals(String supernodeAddress, int supernodePort) {
-        if (this.supernodeAddress.equals(supernodeAddress) && this.supernodePort == supernodePort){
+    public boolean equals(String supernodeAddress) {
+        if (this.supernodeAddress.equals(supernodeAddress)){
             return true;
         }
         return false;
@@ -64,6 +63,10 @@ class SupernodeInfo{
         //From now, the application has a unique port being used, so the port is not important
         //return (this.supernodeAddress.toString() + this.supernodePort);
     }
+
+    void removeClient(String client) {
+        clients.removeClient(client);
+    }
 }
 
 public class SupernodeList {
@@ -76,7 +79,7 @@ public class SupernodeList {
     
     //Add a new supernode to the application
     public void addSupernode(String supernodeAddress, int port){
-        supernodes.add(0, new SupernodeInfo(supernodeAddress, port));
+        supernodes.add(0, new SupernodeInfo(supernodeAddress));
         
         // TODO: Implement a new funcion to split clients
     }
@@ -86,7 +89,7 @@ public class SupernodeList {
     public boolean containsSupernode(String supernodeAddress, int port){
         for(Iterator<SupernodeInfo> i = supernodes.iterator(); i.hasNext(); ) {
             SupernodeInfo supernode = i.next();
-            if (supernode.equals(supernodeAddress, port))
+            if (supernode.equals(supernodeAddress))
                 return true;
         }          
         return false;
@@ -176,6 +179,19 @@ public class SupernodeList {
         connectionSocket.close();
         
         return false;
+    }
+
+    void removeClient(String supernode, String client) {
+        
+        int i;
+        
+        for(i = 0; i < supernodes.size(); i++) {
+            if (supernodes.get(i).equals(supernode)){
+                break;
+            }
+        }
+        
+        supernodes.get(i).removeClient(client);
     }
     
 }

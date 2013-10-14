@@ -7,6 +7,8 @@ package supernode;
 import Interface.Beers4Peers;
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import static supernode.Supernode.myAddress;
 
 /**
@@ -16,15 +18,30 @@ import static supernode.Supernode.myAddress;
 public class TCPListener extends Thread{
 
     Supernode supernode;
+    ServerSocket supernodeSocket;
+    boolean listening;
     
     public TCPListener(Supernode aThis) {
         supernode = aThis;
     }
     
+    public void closeSocket(){
+        try {
+            synchronized(this){
+                listening = true;
+            }
+            supernodeSocket.close();
+        } catch (IOException ex) {
+            System.err.println("Error: TCPListener (Could not close socket): " + ex.getMessage());
+            return;
+        }
+    }
+    
     @Override
     public void run(){
-        ServerSocket supernodeSocket = null;
-        boolean listening = true;
+        supernodeSocket = null;
+        
+        listening = true;
             
         try {
             //Create a new socket at the port passed as argument
@@ -32,7 +49,7 @@ public class TCPListener extends Thread{
             System.out.println("Control: Supernode created at " + myAddress);
         } catch (IOException ex) {
             System.err.println("Error: Supernode (Could not listen on port: " + Beers4Peers.PORT + "): " + ex.getMessage());
-            System.exit(1);
+            return;
         }
         
         while(listening){
@@ -43,7 +60,7 @@ public class TCPListener extends Thread{
                 new SupernodeTCPListenerThread(supernodeSocket.accept(), supernode).start();
             } catch (IOException ex) {
                 System.err.println("Error: Supernode (Accept failed): " + ex.getMessage());
-                System.exit(1);
+                return;
             }
         }
         
@@ -51,7 +68,7 @@ public class TCPListener extends Thread{
             supernodeSocket.close();
         } catch (IOException ex) {
             System.err.println("Error: Server (Could close socket): " + ex.getMessage());
-            System.exit(1);
+            return;
         }
     }
     
