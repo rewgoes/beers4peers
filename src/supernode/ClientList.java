@@ -69,8 +69,10 @@ public class ClientList {
         
         for(Iterator<ClientInfo> i = clients.iterator(); i.hasNext(); ) {
             ClientInfo clientTemp = i.next();
-            if (clientTemp.equals(client));
+            if (clientTemp.equals(client)){
                 clients.remove(clientTemp);
+                break;
+            }
         }
     }
     

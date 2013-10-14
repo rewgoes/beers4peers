@@ -16,7 +16,7 @@ import java.net.UnknownHostException;
  *
  * @author rafael
  */
-public class SupernodeTCPListenerThread extends Thread{
+public class SupernodeTCPThread extends Thread{
     
     private Socket socket;
     private Supernode supernode;
@@ -24,7 +24,7 @@ public class SupernodeTCPListenerThread extends Thread{
     private BufferedReader in;
     private String inputLine, outputLine;
 
-    SupernodeTCPListenerThread(Socket socket, Supernode aThis) {
+    SupernodeTCPThread(Socket socket, Supernode aThis) {
         this.socket = socket;
         this.supernode = aThis;
     }
@@ -35,6 +35,11 @@ public class SupernodeTCPListenerThread extends Thread{
         } catch (IOException ex) {
             System.err.println("Error: ServerThread (Could not close socket): " + ex.getMessage());
         }  
+    }
+    
+    @Override
+    public void run() {
+        messagesIntepreter();
     }
 
     private void messagesIntepreter() {
@@ -83,7 +88,7 @@ public class SupernodeTCPListenerThread extends Thread{
         }  
     }
 
-    private void receiveClientsMessage(String clitenAddress) {
+    private void receiveClientsMessage(String clitentAddress) {
         try {            
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(
@@ -95,20 +100,13 @@ public class SupernodeTCPListenerThread extends Thread{
             
             if(inputLine != null){
                 if (inputLine.equals("upload")){
-                    inputLine = in.readLine();
-                
-                    if(inputLine != null){
-                        supernode.files.put(inputLine, clitenAddress);
+                        receiveFile(clitentAddress);
+                }
+                else {
+                    if (inputLine.equals("disconnectClient")){             
+                        disconnectClient();
                     }
                 }
-                
-                disconnectClient();
-                
-                outputLine = "OK";
-                
-                out.println(outputLine);
-                
-                supernode.output1.append("New file from " + clitenAddress + " added: " + inputLine + "\n");
             }
             
             in.close();
@@ -121,27 +119,19 @@ public class SupernodeTCPListenerThread extends Thread{
 
     private void disconnectClient() {
         
-        System.out.println("Control: Client " + socket.getInetAddress().toString().split("/")[1] +
-                " disconnected");
-        
-        
         String client = socket.getInetAddress().toString().split("/")[1];
-        
-        //Send confirmation to supernode
-        outputLine = "OK";
-        
-        //TODO Send a message to SERVER to disconnect client
+                
         Socket connectionSocket;
-        PrintWriter out;
-        BufferedReader in;
+        PrintWriter outTemp;
+        BufferedReader inTemp;
         
         System.out.println("Control: Trying to disconnect");
 
         try {
             connectionSocket = new Socket();
-            connectionSocket.connect(new InetSocketAddress(Beers4Peers.SERVER_ADDRESS, Beers4Peers.PORT), 1000);
-            out = new PrintWriter(connectionSocket.getOutputStream(), true);
-            in = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+            connectionSocket.connect(new InetSocketAddress(Beers4Peers.SERVER_ADDRESS, Beers4Peers.SERVER_PORT), 1000);
+            outTemp = new PrintWriter(connectionSocket.getOutputStream(), true);
+            inTemp = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
             
             String fromServer;
             String fromUser;
@@ -149,27 +139,44 @@ public class SupernodeTCPListenerThread extends Thread{
             fromUser = "disconnectClient\n"
                     + client;
             
-            out.println(fromUser);
+            outTemp.println(fromUser);
             
-            fromServer = in.readLine();
+            fromServer = inTemp.readLine();
             
             if (fromServer != null){
-                supernode.clientList.removeClient(client);
-                supernode.output1.append("Client " + client + " disconnected\n");
+                synchronized(this){
+                    supernode.clientList.removeClient(client);
+                    supernode.output1.append("Client " + client + " disconnected\n");
+                }
 
-                out.println(outputLine);
+                outTemp.println(outputLine);
+                supernode.listClients();
+            
+                System.out.println("Control: Client " + client +
+                    " disconnected");
+                
+                this.out.print("OK");
             }
             
         } catch (UnknownHostException ex) {
             System.err.println("Error: Client (Don't know about host: " +
                     Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
-
-            supernode.output1.append("Failed to connect: Failed to disconnect\n");
         } catch (IOException ex) {
             System.err.println("Error: Client (Couldn't get I/O for the connection to: " + 
                     Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
-
-            supernode.output1.append("Failed to connect: Faile to disconnect\n");
         }
+    }
+
+    private void receiveFile(String clitentAddress) throws IOException {
+        inputLine = in.readLine();
+
+        if(inputLine != null){
+            supernode.files.put(inputLine, clitentAddress);
+        }
+        outputLine = "OK";
+
+        out.println(outputLine);
+
+        supernode.output1.append("New file from " + clitentAddress + " added: " + inputLine + "\n");
     }
 }

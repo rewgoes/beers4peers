@@ -141,6 +141,7 @@ public class Client {
     public void newFile(String sPath) {
         String path = sPath;
         String filename = sPath.split("/")[sPath.split("/").length - 1];
+        filename = filename.split("\\")[filename.split("\\").length - 1];
         
         Socket connectionSocket;
         PrintWriter out;
@@ -214,6 +215,7 @@ public class Client {
             supernode = null;
             files = null;
             output2.setText(null);
+            connected = false;
             
         } catch (UnknownHostException ex) {
             System.err.println("Error: Client (Don't know about host: " +
