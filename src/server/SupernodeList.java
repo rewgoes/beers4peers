@@ -207,7 +207,6 @@ public class SupernodeList {
         List<String> clients = new ArrayList<String>();
         
         int size = supernode.clients.size();
-        String client;
         
         int count;
         
@@ -223,7 +222,9 @@ public class SupernodeList {
         }
     }
     
-    void forceClientReconnect(String client) throws IOException{
+    void forceClientReconnect(String client) throws IOException{     
+        System.out.println("Control: Sending reconnect to client " +  client);
+        
         Socket connectionSocket;
         PrintWriter out;
         BufferedReader in;
@@ -246,8 +247,6 @@ public class SupernodeList {
         }
 
         String fromServer;
-        
-        System.out.println("Control: Sendiong reconnect to client " +  client);
 
         fromServer = "reconnect";
 

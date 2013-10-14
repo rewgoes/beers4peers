@@ -124,6 +124,8 @@ public class Client {
             }
         }
         
+        this.getAddress();
+        
         tcpListener = new client.TCPListener(this);
         tcpListener.start();
     }
