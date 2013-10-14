@@ -26,7 +26,7 @@ import supernode.ClientList;
 
 class SupernodeInfo{
     
-    private ClientList clients;
+    protected ClientList clients;
     private String supernodeAddress;
     
     public SupernodeInfo (String supernodeAddress){
@@ -192,6 +192,71 @@ public class SupernodeList {
         }
         
         supernodes.get(i).removeClient(client);
+    }
+    
+    void removeSupernode(String sSupernode) throws IOException{
+        int i;
+        
+        for(i = 0; i < supernodes.size(); i++) {
+            if (supernodes.get(i).equals(sSupernode)){
+                break;
+            }
+        }
+        
+        SupernodeInfo supernode = supernodes.get(i);
+        List<String> clients = new ArrayList<String>();
+        
+        int size = supernode.clients.size();
+        String client;
+        
+        int count;
+        
+        //Save supernodes information in a new list
+        for(count = 0; count < size; count++) {
+            clients.add(supernode.clients.get(count));
+        }
+        
+        supernodes.remove(i);
+        
+        for(count = 0; count < size; count++) {
+            forceClientReconnect(clients.get(count));
+        }
+    }
+    
+    void forceClientReconnect(String client) throws IOException{
+        Socket connectionSocket;
+        PrintWriter out;
+        BufferedReader in;
+
+        try {
+            //Try to connect with a 1,5 seconds timeout
+            connectionSocket = new Socket();
+            connectionSocket.connect(new InetSocketAddress(client, Beers4Peers.PORT), 1500);
+            out = new PrintWriter(connectionSocket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+
+        } catch (UnknownHostException ex) {
+            System.err.println("Error: Server (Don't know about host: " +
+                    client + "): " + ex.getMessage());
+            return;
+        } catch (IOException ex) {
+            System.err.println("Error: Server (Couldn't get I/O for the connection to: " + 
+                    client + "): " + ex.getMessage());
+            return;
+        }
+
+        String fromServer;
+        
+        System.out.println("Control: Sendiong reconnect to client " +  client);
+
+        fromServer = "reconnect";
+
+        out.println(fromServer);
+
+        out.close();
+        in.close();
+        connectionSocket.close();
+            
     }
     
 }

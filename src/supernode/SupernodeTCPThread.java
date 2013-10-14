@@ -29,14 +29,6 @@ public class SupernodeTCPThread extends Thread{
         this.supernode = aThis;
     }
     
-    public void closeSocket() {
-        try {
-            socket.close();
-        } catch (IOException ex) {
-            System.err.println("Error: ServerThread (Could not close socket): " + ex.getMessage());
-        }  
-    }
-    
     @Override
     public void run() {
         messagesIntepreter();

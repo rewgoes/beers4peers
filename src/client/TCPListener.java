@@ -2,12 +2,13 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package supernode;
+package client;
 
+import supernode.*;
 import Interface.Beers4Peers;
 import java.io.IOException;
 import java.net.ServerSocket;
-import static supernode.Supernode.myAddress;
+import static client.Client.myAddress;
 
 /**
  *
@@ -15,12 +16,12 @@ import static supernode.Supernode.myAddress;
  */
 public class TCPListener extends Thread{
 
-    Supernode supernode;
+    Client client;
     ServerSocket supernodeSocket;
     boolean listening;
     
-    public TCPListener(Supernode aThis) {
-        supernode = aThis;
+    public TCPListener(Client aThis) {
+        client = aThis;
     }
     
     public void closeSocket(){
@@ -43,7 +44,7 @@ public class TCPListener extends Thread{
         try {
             //Create a new socket at the port passed as argument
             supernodeSocket = new ServerSocket(Beers4Peers.PORT);
-            System.out.println("Control: Supernode created at " + myAddress);
+            System.out.println("Control: Client created at " + myAddress);
         } catch (IOException ex) {
             System.err.println("Error: TCPListener (Could not listen on port: " + Beers4Peers.PORT + "): " + ex.getMessage());
             return;
@@ -54,7 +55,7 @@ public class TCPListener extends Thread{
                 System.out.println("Control: Listening for commands at port " + Beers4Peers.PORT);
                 
                 //Wait for connection, and when one starts, it starts a new thread
-                new SupernodeTCPThread(supernodeSocket.accept(), supernode).start();
+                new ClientTCPThread(supernodeSocket.accept(), client).start();
             } catch (IOException ex) {
                 System.err.println("Error: TCPListener (Accept failed): " + ex.getMessage());
                 return;

@@ -135,7 +135,17 @@ public class ServerThread extends Thread {
         out.println(outputLine);
     }
 
-    private void disconnectSupernode() {
+    private void disconnectSupernode() throws IOException {
+        
+        String supernode = socket.getInetAddress().toString().split("/")[1];
+        
+        supernodeList.removeSupernode(supernode);
+        
+        System.out.println("Control: Supernode " + supernode + " disconnected");
+        
+        //Send confirmation to supernode
+        outputLine = "OK";
+        out.println(outputLine);
     }
 
     

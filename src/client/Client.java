@@ -4,6 +4,7 @@ package client;
 import Interface.Beers4Peers;
 import java.io.*;
 import java.net.*;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import javax.swing.JTextArea;
 
@@ -16,17 +17,21 @@ import javax.swing.JTextArea;
 public class Client {
     
     //Supernode responsible for this client
-    private String supernode;
+    protected String supernode;
     
     //This are the textArea in interface, use it to append messages
-    private JTextArea output1;
-    private JTextArea output2;
+    protected JTextArea output1;
+    protected JTextArea output2;
     
     //Check if client is connected
     private boolean connected = false;
     
+    protected static String myAddress;
+    
     //Control interface's button
     private boolean[] buttonContol;
+    
+    private TCPListener tcpListener;
 
     //Return current client's supernode
     public String getSupernode() {
@@ -118,7 +123,39 @@ public class Client {
                 output1.append("Connected to: " + supernode + "\n");
             }
         }
+        
+        tcpListener = new client.TCPListener(this);
+        tcpListener.start();
     }
+    
+    //This method only gets the supernodes local address
+    protected static void getAddress(){
+        try {
+            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            while (interfaces.hasMoreElements()) {
+                NetworkInterface networkInterface = interfaces.nextElement();
+                if (networkInterface.isLoopback())
+                    continue;    // Don't want to broadcast to the loopback interface
+                // If not loopback, get its broadcast address
+                for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
+                    InetAddress broadcast = interfaceAddress.getBroadcast();
+                    if (broadcast == null)
+                        continue;
+                    else{
+                        myAddress = interfaceAddress.getAddress().getHostAddress();
+                    }
+                }
+            }
+            if (myAddress == null){
+                System.err.println("Error: Server (There's no connection)");
+                System.exit(1);
+            }
+        } catch (Exception ex) {
+            System.err.println("Error: Server (Could not retrieve address): " + ex.getMessage());
+            System.exit(1);
+        }
+    }
+    
     
     //Control interface's buttons
     private void buttonsControl(){
@@ -141,7 +178,7 @@ public class Client {
     public void newFile(String sPath) {
         String path = sPath;
         String filename = sPath.split("/")[sPath.split("/").length - 1];
-        filename = filename.split("\\")[filename.split("\\").length - 1];
+        filename = filename.split("\\\\")[filename.split("\\\\").length - 1];
         
         Socket connectionSocket;
         PrintWriter out;
@@ -217,6 +254,8 @@ public class Client {
             output2.setText(null);
             connected = false;
             
+            tcpListener.closeSocket();
+            
         } catch (UnknownHostException ex) {
             System.err.println("Error: Client (Don't know about host: " +
                     Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
@@ -226,9 +265,20 @@ public class Client {
             System.err.println("Error: Client (Couldn't get I/O for the connection to: " + 
                     Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
 
-            output1.append("Failed to connect: Faile to disconnect\n");
+            output1.append("Failed to connect: Failed to disconnect\n");
         }
         
     }
+    
+    public void forceReconnect(){
+        output1.append("Supernode " + supernode + " disconnected" + "\n"
+                + "Trying to reconnect...\n");
+        supernode = null;
+        files = null; //TODO: change it to preserve files previous uploaded
+        output2.setText(null);
+        connected = false;
+        tcpListener.closeSocket();
+    }
+    
     
 }
