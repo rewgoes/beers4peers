@@ -207,6 +207,7 @@ public class Supernode {
             
             files = null;
             output2.setText(null);
+            clientList = null;
             
             connected = false;
             buttonsControl();

@@ -23,7 +23,7 @@ class ClientTCPThread extends Thread{
     private BufferedReader in;
     private String inputLine, outputLine;
 
-    public ClientTCPThread(Socket accept, Client client){
+    public ClientTCPThread(Socket socket, Client client){
         this.client = client;
         this.socket = socket;
     }

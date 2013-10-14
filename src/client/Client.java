@@ -272,7 +272,7 @@ public class Client {
         
     }
     
-    public void forceReconnect(){
+    public void forceReconnect() throws IOException{
         output1.append("Supernode " + supernode + " disconnected" + "\n"
                 + "Trying to reconnect...\n");
         supernode = null;
@@ -280,6 +280,7 @@ public class Client {
         output2.setText(null);
         connected = false;
         tcpListener.closeSocket();
+        this.connect();
     }
     
     
