@@ -109,10 +109,11 @@ public class Supernode {
             }
             else {
                 
-                String[] supernodesTemp = fromServer.split("-");
+                String[] supernodesTemp = fromServer.split("-", 0);
                 
-                for (int i = 0; i < supernodesTemp.length - 1; i++){
-                    supernodes.add(supernodesTemp[i]);
+                for (int i = 0; i < supernodesTemp.length; i++){
+                    if(supernodesTemp[i].length() > 5)
+                        supernodes.add(supernodesTemp[i]);
                 }
                 
                 connected = true;
