@@ -203,20 +203,20 @@ public class SupernodeTCPThread extends Thread{
     }
 
     //Receive a file from client and add it to the hashtable
-    private void receiveFile(String clitentAddress) throws IOException {
+    private void receiveFile(String clientAddress) throws IOException {
         inputLine = in.readLine();
 
         if(inputLine != null){
-            supernode.files.put(inputLine, clitentAddress);
+            supernode.files.put(inputLine, clientAddress);
         }
         outputLine = "OK";
 
         out.println(outputLine);
 
-        supernode.output1.append("New file from " + clitentAddress + " added: " + inputLine + "\n");
+        supernode.output1.append("New file from " + clientAddress + " added: " + inputLine + "\n");
         
         //If its a file from client and not from a supernode, so spread it
-        if (clitentAddress.contains(clitentAddress))
+        if (supernode.clientList.contains(clientAddress))
             for(int i = 0; i < supernode.supernodes.size(); i++) {
                 sendFile(supernode.supernodes.get(i), inputLine);
             }
