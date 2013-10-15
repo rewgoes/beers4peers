@@ -39,7 +39,7 @@ public class Client {
     }
     
     //Hashtable of files
-    private Hashtable<String, String> files;
+    protected Hashtable<String, String> files;
     
     //Client constructor
     public Client(JTextArea jTextArea1, JTextArea jTextArea2, boolean[] buttonContol) {
@@ -172,7 +172,7 @@ public class Client {
             buttonContol[1] = false;
             buttonContol[2] = false;
             buttonContol[3] = false;
-            buttonContol[4] = false;
+            buttonContol[4] = true;
         }
     }
 
@@ -223,6 +223,49 @@ public class Client {
             output1.append("Failed to connect: Faile to send file\n");
         }
     }
+    
+    public void downloadFile(String filename) {        
+        Socket connectionSocket;
+        PrintWriter out;
+        BufferedReader in;
+        
+        System.out.println("Control: Asking for " + filename + " to " + this.supernode);
+
+        try {
+            connectionSocket = new Socket();
+            connectionSocket.connect(new InetSocketAddress(this.supernode, Beers4Peers.PORT), 1000);
+            out = new PrintWriter(connectionSocket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+            
+            String fromServer;
+            String fromUser;
+
+            fromUser = "download\n" + myAddress + "\n" + filename;
+            
+            out.println(fromUser);
+            
+            System.out.println("Control: Waiting supernode confirmation " + filename);
+            
+            fromServer = in.readLine();
+            
+            //Supernode received file
+            if(fromServer != null){
+                System.out.println("Control: File " + filename + " found in the network");
+            }
+                
+            
+        } catch (UnknownHostException ex) {
+            System.err.println("Error: Client (Don't know about host: " +
+                    Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
+
+            output1.append("Failed to connect: Failed to send file\n");
+        } catch (IOException ex) {
+            System.err.println("Error: Client (Couldn't get I/O for the connection to: " + 
+                    Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
+
+            output1.append("Failed to connect: Faile to send file\n");
+        }
+    }
 
     public void disconnect() {
         Socket connectionSocket;
@@ -256,6 +299,8 @@ public class Client {
             output2.setText(null);
             connected = false;
             
+            this.buttonsControl();
+            
             tcpListener.closeSocket();
             
         } catch (UnknownHostException ex) {
@@ -276,7 +321,7 @@ public class Client {
         output1.append("Supernode " + supernode + " disconnected" + "\n"
                 + "Trying to reconnect...\n");
         supernode = null;
-        files = null; //TODO: change it to preserve files previous uploaded
+        files = null; //TODO: change it to preserve files previous uploaded and send again to the new supernode
         output2.setText(null);
         connected = false;
         tcpListener.closeSocket();

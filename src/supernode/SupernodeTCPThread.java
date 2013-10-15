@@ -43,12 +43,12 @@ public class SupernodeTCPThread extends Thread{
         else
             if (supernode.clientList.contains(socket.getInetAddress().toString().split("/")[1])){
                 System.out.println("Control: New request from client");
-                receiveClientsMessage(socket.getInetAddress().toString().split("/")[1]);
+                receiveClientsSupernodeMessage(socket.getInetAddress().toString().split("/")[1]);
             }
             else
                 if (supernode.supernodes.contains(socket.getInetAddress().toString().split("/")[1])) {
                     System.out.println("Control: New request from supernode");
-                    receiveClientsMessage(socket.getInetAddress().toString().split("/")[1]);
+                    receiveClientsSupernodeMessage(socket.getInetAddress().toString().split("/")[1]);
                 }
                 else
                     System.out.println("Control: Unknown client");
@@ -98,6 +98,13 @@ public class SupernodeTCPThread extends Thread{
                         
                     }
                 }
+                else if (inputLine.equals("download")){
+                    findFileOwner();
+                    
+                    outputLine = "OK";
+                
+                    out.println(outputLine);
+                }
                 else{
                 
                     //If it receives a client
@@ -121,7 +128,7 @@ public class SupernodeTCPThread extends Thread{
         }  
     }
 
-    private void receiveClientsMessage(String clitentAddress) {
+    private void receiveClientsSupernodeMessage(String clitentAddress) {
         try {            
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(
@@ -252,6 +259,53 @@ public class SupernodeTCPThread extends Thread{
         } catch (IOException ex) {
             System.err.println("Error: Client (Couldn't get I/O for the connection to: " + 
                     Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
+        }
+    }
+
+    private void findFileOwner() throws IOException {
+        String client = in.readLine();
+        
+        if (client != null){
+            
+            String filename = in.readLine();
+            
+            if (filename != null) {
+                
+                String fileOwner = supernode.files.get(filename);
+        
+                if (fileOwner != null){
+                    Socket connectionSocket;
+                    PrintWriter outTemp;
+                    BufferedReader inTemp;
+
+                    try {
+                        connectionSocket = new Socket();
+                        connectionSocket.connect(new InetSocketAddress(fileOwner, Beers4Peers.PORT), 1000);
+                        outTemp = new PrintWriter(connectionSocket.getOutputStream(), true);
+                        inTemp = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+
+                        String fromServer;
+                        String fromUser;
+
+                        fromUser = "download\n" + client + "\n" + filename;
+
+                        outTemp.println(fromUser);
+
+                        System.out.println("Control: Waiting supernode confirmation " + filename);
+
+                        fromServer = inTemp.readLine();
+
+                        System.out.println("Control: Another supernode found file " + filename);
+
+                    } catch (UnknownHostException ex) {
+                        System.err.println("Error: Client (Don't know about host: " +
+                                Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
+                    } catch (IOException ex) {
+                        System.err.println("Error: Client (Couldn't get I/O for the connection to: " + 
+                                Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
+                    }
+                }
+            }
         }
     }
 }

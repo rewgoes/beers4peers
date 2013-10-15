@@ -40,11 +40,10 @@ class ClientTCPThread extends Thread{
         }
         else
             if (client.supernode.equals(socket.getInetAddress().toString().split("/")[1])){
-                System.out.println("Control: New request from client");
+                System.out.println("Control: New request from supernode");
                 
                 //TODO: implement sendFileToClient
-                
-                sendFileToClient();
+                waitForDownload();
             }
             else{
                 System.out.println("Control: Unknown supernode");
@@ -66,7 +65,7 @@ class ClientTCPThread extends Thread{
                     client.forceReconnect();
                 }
 
-                client.output1.append("Client " + inputLine + " to server successfully\n");
+                client.output1.append("Client " + inputLine + " reconnected to server successfully\n");
             }
 
             in.close();
@@ -77,8 +76,48 @@ class ClientTCPThread extends Thread{
         } 
     }
 
-    private void sendFileToClient() {
-        //TODO: implement sendFileToClient
+    private void waitForDownload() {
+        try {            
+            out = new PrintWriter(socket.getOutputStream(), true);
+            in = new BufferedReader(
+                        new InputStreamReader(
+                        socket.getInputStream()));
+            
+            inputLine = in.readLine();
+            
+            if(inputLine != null){
+                if (inputLine.equals("download")){
+                    String file = in.readLine();
+
+                    if(file != null){
+                        if (client.files.contains(file)){
+                            String clientToSend = in.readLine();
+                            
+                            if(clientToSend != null){
+                                out.println("OK");
+                                
+                                sendFileTo(clientToSend, file);
+
+                                client.output1.append("File " + file + 
+                                        " sent to " + clientToSend + "\n");
+                            }
+                        }
+                    }
+                }
+            }
+
+            in.close();
+            out.close();
+            
+        } catch (IOException ex) {
+            System.err.println("Error: ServerThread (Problem reading or writing in socket): " + ex.getMessage());
+        } 
+    }
+
+    private void sendFileTo(String clientToSend, String file) {
+        
+        //send file to client interested on it
+        
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
