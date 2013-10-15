@@ -76,13 +76,29 @@ public class SupernodeTCPThread extends Thread{
                 
                         out.println(outputLine);
                         
-                        supernode.output1.append("Supernode " + inputLine + " added to server successfully\n");
+                        supernode.output1.append("Supernode " + inputLine + " added successfully\n");
                         
                         supernode.listClientsAndSupernodes();
                         
                     }
                 }
-                else {
+                else if (inputLine.equals("supernodeDisconnect")){
+                    inputLine = in.readLine();
+                    
+                    if(inputLine != null){
+                        supernode.supernodes.remove(inputLine);
+                        
+                        outputLine = "OK";
+                
+                        out.println(outputLine);
+                        
+                        supernode.output1.append("Supernode " + inputLine + " removed successfully\n");
+                        
+                        supernode.listClientsAndSupernodes();
+                        
+                    }
+                }
+                else{
                 
                     //If it receives a client
                     supernode.clientList.add(inputLine);

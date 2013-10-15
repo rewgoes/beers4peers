@@ -87,8 +87,6 @@ public class SupernodeList {
             informSupernode(supernode.toString(), supernodeAddress);
         }
         
-        
-        
         supernodes.add(0, new SupernodeInfo(supernodeAddress));
         
         return supernodesTemp;
@@ -230,6 +228,10 @@ public class SupernodeList {
         for(count = 0; count < size; count++) {
             forceClientReconnect(clients.get(count));
         }
+        
+        for (count = 0; count < supernodes.size(); count++) {
+            disconnectSupernodeFrom(supernodes.get(count).toString(), sSupernode);
+        }
     }
     
     void forceClientReconnect(String client) throws IOException{     
@@ -284,6 +286,45 @@ public class SupernodeList {
             String fromSupernode;
 
             fromServer = "supernode\n" + supernodeAdded;
+
+            out.println(fromServer);
+
+            fromSupernode = in.readLine();
+
+            if(fromSupernode == null){
+                System.err.println("Error: Server (Some undefined reason)");
+            }
+            else {
+                out.close();
+                in.close();
+                connectionSocket.close();
+            }
+
+        } catch (UnknownHostException ex) {
+            System.err.println("Error: Server (Don't know about host: " +
+                    Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
+        } catch (IOException ex) {
+            System.err.println("Error: Server (Couldn't get I/O for the connection to: " + 
+                    Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
+        }
+    }
+
+    private void disconnectSupernodeFrom(String supernodeAddress, String supernodeDisconnected) {
+        Socket connectionSocket;
+        PrintWriter out;
+        BufferedReader in;
+
+        try {
+            //Try to connect with a 1,5 seconds timeout
+            connectionSocket = new Socket();
+            connectionSocket.connect(new InetSocketAddress(supernodeAddress, Beers4Peers.PORT), 1500);
+            out = new PrintWriter(connectionSocket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+            
+            String fromServer;
+            String fromSupernode;
+
+            fromServer = "supernodeDisconnect\n" + supernodeDisconnected;
 
             out.println(fromServer);
 

@@ -111,7 +111,7 @@ public class Supernode {
                 
                 String[] supernodesTemp = fromServer.split("-");
                 
-                for (int i = 0; i < supernodesTemp.length - 1; i++){
+                for (int i = 0; i < supernodesTemp.length; i++){
                     supernodes.add(supernodesTemp[i]);
                 }
                 
