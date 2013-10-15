@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package Interface;
 
 import java.io.IOException;
@@ -15,7 +11,9 @@ import javax.swing.JFileChooser;
 
 /**
  *
- * @author andre
+ * @author rafael(rewgoes), matheus, andre
+ * 
+ * Class/thread responsible for handling connections
  */
 public class Beers4Peers extends javax.swing.JFrame {
     
@@ -31,15 +29,14 @@ public class Beers4Peers extends javax.swing.JFrame {
     private String type;
    
     
-    
-    public Beers4Peers() throws InterruptedException, SocketException{
+    public Beers4Peers(){
         initComponents();
         
         this.addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-                if (!jButton5.getText().equals("Connect") && !jButton1.isEnabled()){
-                    jButton5.setText("Connect");
+                if (!connectDisconnect.getText().equals("Connect") && !clientConnect.isEnabled()){
+                    connectDisconnect.setText("Connect");
                     if (type.equals("client"))
                         client.disconnect();
                     else
@@ -63,7 +60,7 @@ public class Beers4Peers extends javax.swing.JFrame {
         client = new Client(jTextArea1, jTextArea2, buttonContol);
         supernode = new Supernode(jTextArea1, jTextArea2, buttonContol);
         
-        control = new ButtonsControlThread(buttonContol, jButton1, jButton2, jButton3, jButton4, jButton5);
+        control = new ButtonsControlThread(buttonContol, clientConnect, supernodeConnect, upload, download, connectDisconnect);
         
         control.start();
     }
@@ -105,25 +102,25 @@ public class Beers4Peers extends javax.swing.JFrame {
         jFileChooser2 = new javax.swing.JFileChooser();
         jFileChooser3 = new javax.swing.JFileChooser();
         jFileChooser4 = new javax.swing.JFileChooser();
-        jButton1 = new javax.swing.JButton();
+        clientConnect = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
         jScrollPane4 = new javax.swing.JScrollPane();
         jTextArea2 = new javax.swing.JTextArea();
-        jButton2 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
-        jButton4 = new javax.swing.JButton();
-        jButton5 = new javax.swing.JButton();
+        supernodeConnect = new javax.swing.JButton();
+        upload = new javax.swing.JButton();
+        download = new javax.swing.JButton();
+        connectDisconnect = new javax.swing.JButton();
         jTextField1 = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jButton1.setText("Client");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        clientConnect.setText("Client");
+        clientConnect.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                clientConnectActionPerformed(evt);
             }
         });
 
@@ -143,34 +140,34 @@ public class Beers4Peers extends javax.swing.JFrame {
         jTextArea2.setFocusable(false);
         jScrollPane4.setViewportView(jTextArea2);
 
-        jButton2.setText("Supernode");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        supernodeConnect.setText("Supernode");
+        supernodeConnect.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                supernodeConnectActionPerformed(evt);
             }
         });
 
-        jButton3.setText("Upload");
-        jButton3.setEnabled(false);
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
+        upload.setText("Upload");
+        upload.setEnabled(false);
+        upload.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
+                uploadActionPerformed(evt);
             }
         });
 
-        jButton4.setText("Download");
-        jButton4.setEnabled(false);
-        jButton4.addActionListener(new java.awt.event.ActionListener() {
+        download.setText("Download");
+        download.setEnabled(false);
+        download.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton4ActionPerformed(evt);
+                downloadActionPerformed(evt);
             }
         });
 
-        jButton5.setText("Disconnect");
-        jButton5.setEnabled(false);
-        jButton5.addActionListener(new java.awt.event.ActionListener() {
+        connectDisconnect.setText("Disconnect");
+        connectDisconnect.setEnabled(false);
+        connectDisconnect.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton5ActionPerformed(evt);
+                connectDisconnectActionPerformed(evt);
             }
         });
 
@@ -197,17 +194,17 @@ public class Beers4Peers extends javax.swing.JFrame {
                         .addComponent(jLabel1)
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jButton1)
+                        .addComponent(clientConnect)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton2)
+                        .addComponent(supernodeConnect)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton3)
+                        .addComponent(upload)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton5)
+                        .addComponent(connectDisconnect)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jTextField1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton4)))
+                        .addComponent(download)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -227,20 +224,20 @@ public class Beers4Peers extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jButton3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jButton5)
+                        .addComponent(upload, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(connectDisconnect)
                         .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jButton1)
-                        .addComponent(jButton2)
-                        .addComponent(jButton4)))
+                        .addComponent(clientConnect)
+                        .addComponent(supernodeConnect)
+                        .addComponent(download)))
                 .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void clientConnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clientConnectActionPerformed
         try {
             initClient();
         } catch (InterruptedException ex) {
@@ -248,9 +245,9 @@ public class Beers4Peers extends javax.swing.JFrame {
         } catch (SocketException ex) {
             Logger.getLogger(Beers4Peers.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_clientConnectActionPerformed
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+    private void supernodeConnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_supernodeConnectActionPerformed
         try {
             // TODO add your handling code here:
             initSupernode();
@@ -259,14 +256,14 @@ public class Beers4Peers extends javax.swing.JFrame {
         } catch (SocketException ex) {
             Logger.getLogger(Beers4Peers.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }//GEN-LAST:event_jButton2ActionPerformed
+    }//GEN-LAST:event_supernodeConnectActionPerformed
 
-    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+    private void downloadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downloadActionPerformed
         // TODO add your handling code here:
         client.downloadFile(jTextField1.getText());
-    }//GEN-LAST:event_jButton4ActionPerformed
+    }//GEN-LAST:event_downloadActionPerformed
 
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+    private void uploadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_uploadActionPerformed
         // TODO add your handling code here:
         JFileChooser fc = new JFileChooser();
         fc.showOpenDialog(null);
@@ -277,19 +274,19 @@ public class Beers4Peers extends javax.swing.JFrame {
         if (filename != null)
             client.newFile(filename);
             
-    }//GEN-LAST:event_jButton3ActionPerformed
+    }//GEN-LAST:event_uploadActionPerformed
 
-    private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
+    private void connectDisconnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectDisconnectActionPerformed
         // TODO add your handling code here:
         try {
-            if (jButton5.getText().equals("Connect")){
-                jButton5.setText("Disconnect");
+            if (connectDisconnect.getText().equals("Connect")){
+                connectDisconnect.setText("Disconnect");
                 if (type.equals("client"))
                     client.connect();
                 else
                     supernode.connect();
             } else {
-                jButton5.setText("Connect");
+                connectDisconnect.setText("Connect");
                 if (type.equals("client"))
                     client.disconnect();
                 else
@@ -298,7 +295,7 @@ public class Beers4Peers extends javax.swing.JFrame {
         } catch (IOException ex) {
             Logger.getLogger(Beers4Peers.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }//GEN-LAST:event_jButton5ActionPerformed
+    }//GEN-LAST:event_connectDisconnectActionPerformed
 
     private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
         // TODO add your handling code here:
@@ -352,22 +349,14 @@ public class Beers4Peers extends javax.swing.JFrame {
         java.awt.EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                try {
-                    new Beers4Peers().setVisible(true);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(Beers4Peers.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (SocketException ex) {
-                    Logger.getLogger(Beers4Peers.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                new Beers4Peers().setVisible(true);
             }
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
-    private javax.swing.JButton jButton5;
+    private javax.swing.JButton clientConnect;
+    private javax.swing.JButton connectDisconnect;
+    private javax.swing.JButton download;
     private javax.swing.JFileChooser jFileChooser1;
     private javax.swing.JFileChooser jFileChooser2;
     private javax.swing.JFileChooser jFileChooser3;
@@ -379,6 +368,8 @@ public class Beers4Peers extends javax.swing.JFrame {
     private javax.swing.JTextArea jTextArea1;
     private javax.swing.JTextArea jTextArea2;
     private javax.swing.JTextField jTextField1;
+    private javax.swing.JButton supernodeConnect;
+    private javax.swing.JButton upload;
     // End of variables declaration//GEN-END:variables
 
 }

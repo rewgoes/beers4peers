@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package Interface;
 
 import java.util.logging.Level;
@@ -10,10 +6,10 @@ import javax.swing.JButton;
 
 /**
  *
- * @author rafael
+ * @author rafael(rewgoes), matheus, andre
+ * 
+ * This thread is responsible for enabling/disabling buttons in the interface each second
  */
-
-//This thread is responsible for enabling buttons in the interface
 public class ButtonsControlThread extends Thread{
     
     private boolean[] controlButton;
@@ -24,7 +20,7 @@ public class ButtonsControlThread extends Thread{
     private JButton jButton5;
 
     public ButtonsControlThread(boolean[] controlString, JButton jButton1, JButton jButton2, 
-            JButton jButton3, JButton jButton4, JButton jButton5) throws InterruptedException{
+            JButton jButton3, JButton jButton4, JButton jButton5){
         
         //Each button n is related to the position n-1 in controlButton
         this.controlButton = controlString;

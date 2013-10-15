@@ -10,27 +10,29 @@ import javax.swing.JTextArea;
 
 /**
  *
- * @author rafael, matheus, andre
+ * @author rafael(rewgoes), matheus, andre
  * 
- * Class responsible the client side of the application
+ * Class responsible for initialize the client side of the application
  */
 public class Client {
     
     //Supernode responsible for this client
     protected String supernode;
     
-    //This are the textArea in interface, use it to append messages
+    //TextArea in interface, use it to append messages
     protected JTextArea output1;
     protected JTextArea output2;
     
     //Check if client is connected
     private boolean connected = false;
     
+    //Client's local address
     protected static String myAddress;
     
     //Control interface's button
     private boolean[] buttonContol;
     
+    //Thread responsible to listen for connections
     private TCPListener tcpListener;
 
     //Return current client's supernode
@@ -38,10 +40,10 @@ public class Client {
         return supernode;
     }
     
-    //Hashtable of files
+    //Hashtable of files, associates a filename to it absolute path
     protected Hashtable<String, String> files;
     
-    //Client constructor
+    //Client constructor, start as many objects as possible
     public Client(JTextArea jTextArea1, JTextArea jTextArea2, boolean[] buttonContol) {
         this.output1 = jTextArea1;
         this.output2 = jTextArea2;
@@ -49,9 +51,12 @@ public class Client {
         this.files = new Hashtable<String, String>();
     }
     
-    //Initialize client by calling its threads and connect to server, finding a supernode
+    //Initialize client by calling its threads and connecting it to server, finding a supernode
     public void connect() throws IOException{
         if (!connected){
+            //If client address is unknown, get its address
+            if(myAddress == null) this.getAddress();
+            
             Socket connectionSocket;
             PrintWriter out;
             BufferedReader in;
@@ -59,6 +64,7 @@ public class Client {
             try {
                 connectionSocket = new Socket();
                 connectionSocket.connect(new InetSocketAddress(Beers4Peers.SERVER_ADDRESS, Beers4Peers.SERVER_PORT), 1000);
+                System.out.println("Control: Connected to server. Looking for supernode");
                 out = new PrintWriter(connectionSocket.getOutputStream(), true);
                 in = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
                 
@@ -115,19 +121,18 @@ public class Client {
                 in.close();
                 connectionSocket.close();
 
-                System.out.println("Control: Client connected to " + fromServer);
+                System.out.println("Control: Client connected to supernode " + fromServer);
                 
                 output2.setText(null);
                 output2.append("Supernode:\n" + supernode + "\n");
 
                 output1.append("Connected to: " + supernode + "\n");
+                
+                //Starts listener thread
+                tcpListener = new client.TCPListener(this);
+                tcpListener.start();
             }
         }
-        
-        this.getAddress();
-        
-        tcpListener = new client.TCPListener(this);
-        tcpListener.start();
     }
     
     //This method only gets the supernodes local address
@@ -149,11 +154,13 @@ public class Client {
                 }
             }
             if (myAddress == null){
-                System.err.println("Error: Server (There's no connection)");
+                System.err.println("Error: Client (There's no connection)");
                 System.exit(1);
+            } else {
+                System.out.println("Control: Client address " + myAddress);
             }
         } catch (Exception ex) {
-            System.err.println("Error: Server (Could not retrieve address): " + ex.getMessage());
+            System.err.println("Error: Client (Could not retrieve address): " + ex.getMessage());
             System.exit(1);
         }
     }
@@ -175,13 +182,18 @@ public class Client {
             buttonContol[4] = true;
         }
     }
+    
+    //=======================================================
+    //The following methods are used only when there's a supernode assigned to the client
 
     //Adds a new file to its hashtable
     public void newFile(String sPath) {
+        //Get filename from the path, removing \(windows) and /(linux)
         String path = sPath;
         String filename = sPath.split("/")[sPath.split("/").length - 1];
         filename = filename.split("\\\\")[filename.split("\\\\").length - 1];
         
+        //Send filename to the supernode responsible for this client
         Socket connectionSocket;
         PrintWriter out;
         BufferedReader in;
@@ -208,6 +220,10 @@ public class Client {
             //Supernode received file
             if(fromServer != null){
                 output1.append("New file available: " + filename + "\n");
+            } else {
+                System.err.println("Error: Client (Supernode didn't answer)");
+                output1.append("Failed to connect: Failed to send file\n");
+                return;
             }
             
             files.put(filename, path);
@@ -226,6 +242,7 @@ public class Client {
         }
     }
     
+    //Download a file, sending filename to the supernode so it can look for the file
     public void downloadFile(String filename) {        
         Socket connectionSocket;
         PrintWriter out;
@@ -252,7 +269,15 @@ public class Client {
             
             //Supernode received file
             if(fromServer != null){
-                System.out.println("Control: File " + filename + " found in the network");
+                if (fromServer.equals("OK"))
+                    System.out.println("Control: File " + filename + " found in the network. Download should start soon");
+                else {
+                    System.err.println("Error: Client (File doesn't exist)");
+                    output1.append("Probably this file doesn't exist)\n");
+                }
+            } else {
+                System.err.println("Error: Client (Supernode unresponsible)");
+                output1.append("Some problem ocurred with your supernode\n");
             }
                 
             
@@ -269,6 +294,7 @@ public class Client {
         }
     }
 
+    //Disconnect from the application, setting all 
     public void disconnect() {
         Socket connectionSocket;
         PrintWriter out;
@@ -287,6 +313,8 @@ public class Client {
 
             fromUser = "disconnectClient";
             
+            //TODO: send all file name to the supernode so it can remove from its list
+            
             out.println(fromUser);
             
             fromServer = in.readLine();
@@ -294,10 +322,14 @@ public class Client {
             //Supernode received file
             if(fromServer != null){
                 output1.append("Disconnected\n");
+            } else {
+                System.err.println("Error: Client (Supernode unresponsible)");
+                output1.append("Some problem ocurred with your supernode\n");
+                return;
             }
             
             supernode = null;
-            files = null;
+            files = new Hashtable<String, String>();
             output2.setText(null);
             connected = false;
             
@@ -309,21 +341,22 @@ public class Client {
             System.err.println("Error: Client (Don't know about host: " +
                     Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
 
-            output1.append("Failed to connect: Failed to disconnect\n");
+            output1.append("Failed to disconnect\n");
         } catch (IOException ex) {
             System.err.println("Error: Client (Couldn't get I/O for the connection to: " + 
                     Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
 
-            output1.append("Failed to connect: Failed to disconnect\n");
+            output1.append("Failed to disconnect\n");
         }
         
     }
     
+    //Method called when a supernode disconnect from the application, forcint this to connect to another supernode
     public void forceReconnect() throws IOException{
         output1.append("Supernode " + supernode + " disconnected" + "\n"
                 + "Trying to reconnect...\n");
         supernode = null;
-        files = null; //TODO: change it to preserve files previous uploaded and send again to the new supernode
+        files = new Hashtable<String, String>(); //TODO: change it to preserve files previous uploaded and send again to the new supernode
         output2.setText(null);
         connected = false;
         tcpListener.closeSocket();

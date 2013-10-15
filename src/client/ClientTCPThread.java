@@ -1,10 +1,5 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package client;
 
-import Interface.Beers4Peers;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -13,7 +8,9 @@ import java.net.Socket;
 
 /**
  *
- * @author rafael
+ * @author rafael(rewgoes), matheus, andre
+ * 
+ * Class/thread responsible for handling connections
  */
 class ClientTCPThread extends Thread{
     
@@ -28,12 +25,9 @@ class ClientTCPThread extends Thread{
         this.socket = socket;
     }
     
+    //Interprets first line of the message received
     @Override
     public void run() {
-        messagesIntepreter();
-    }
-
-    private void messagesIntepreter() {
         try {            
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(
@@ -45,10 +39,12 @@ class ClientTCPThread extends Thread{
             
             if(inputLine != null){
                 switch (inputLine) {
+                    //Server sends a reconnect message to client when its supernode disconnects
                     case "reconnect":
                         client.forceReconnect();
                         client.output1.append("Client " + inputLine + " reconnected to server successfully\n");
                         break;
+                    //Supernode send a message to client asking to download a file
                     case "download":
                         System.out.println("Control: Preparing to upload file");
                         String clientToSend = in.readLine();
@@ -77,9 +73,9 @@ class ClientTCPThread extends Thread{
             
         } catch (IOException ex) {
             System.err.println("Error: ServerThread (Problem reading or writing in socket): " + ex.getMessage());
-        } 
+        }
     }
-
+    
     private void sendFileTo(String clientToSend, String file) {
         
         //send file to client interested on it
