@@ -209,6 +209,8 @@ public class Client {
             if(fromServer != null){
                 output1.append("New file available: " + filename + "\n");
             }
+            
+            files.put(filename, path);
                 
             
         } catch (UnknownHostException ex) {
