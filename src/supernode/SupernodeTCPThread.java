@@ -35,6 +35,7 @@ public class SupernodeTCPThread extends Thread{
     }
 
     private void messagesIntepreter() {
+        //Receive a client or supernode from server
         if (socket.getInetAddress().toString().split("/")[1].equals(Beers4Peers.SERVER_ADDRESS)){
             System.out.println("Control: New request from server");
             receiveClientFromServer();
@@ -61,7 +62,6 @@ public class SupernodeTCPThread extends Thread{
                         new InputStreamReader(
                         socket.getInputStream()));
             
-            //TODO: SupernodeTCPListenerThread: Answer server, accepting client
             inputLine = in.readLine();
             
             if(inputLine != null){
@@ -78,20 +78,23 @@ public class SupernodeTCPThread extends Thread{
                         
                         supernode.output1.append("Supernode " + inputLine + " added to server successfully\n");
                         
-                        return;
+                        supernode.listClientsAndSupernodes();
+                        
                     }
                 }
+                else {
                 
-                //If it receives a client
-                supernode.clientList.add(inputLine);
-                
-                outputLine = "OK";
-                
-                out.println(outputLine);
-                
-                supernode.listClientsAndSupernodes();
+                    //If it receives a client
+                    supernode.clientList.add(inputLine);
 
-                supernode.output1.append("Client " + inputLine + " added to server successfully\n");
+                    outputLine = "OK";
+
+                    out.println(outputLine);
+
+                    supernode.listClientsAndSupernodes();
+
+                    supernode.output1.append("Client " + inputLine + " added to server successfully\n");
+                }
             }
 
             in.close();

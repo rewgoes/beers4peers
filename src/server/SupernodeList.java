@@ -82,8 +82,9 @@ public class SupernodeList {
         String supernodesTemp = new String();
         
         for(Iterator<SupernodeInfo> i = supernodes.iterator(); i.hasNext(); ) {
-            supernodesTemp = supernodesTemp.concat(i.next().toString() + "-");
-            informSupernode(i.next().toString(), supernodeAddress);
+            SupernodeInfo supernode = i.next();
+            supernodesTemp = supernodesTemp.concat(supernode.toString() + "-");
+            informSupernode(supernode.toString(), supernodeAddress);
         }
         
         
