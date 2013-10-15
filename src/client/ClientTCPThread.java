@@ -50,6 +50,7 @@ class ClientTCPThread extends Thread{
                         client.output1.append("Client " + inputLine + " reconnected to server successfully\n");
                         break;
                     case "download":
+                        System.out.println("Preparing to upload file");
                         String clientToSend = in.readLine();
                         if(clientToSend != null){
                             String file = in.readLine();
@@ -83,7 +84,6 @@ class ClientTCPThread extends Thread{
         
         //send file to client interested on it
         
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
 }
