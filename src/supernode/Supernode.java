@@ -111,7 +111,7 @@ public class Supernode {
                 
                 String[] supernodesTemp = fromServer.split("-");
                 
-                for (int i = 0; i < supernodesTemp.length; i++){
+                for (int i = 0; i < supernodesTemp.length - 1; i++){
                     supernodes.add(supernodesTemp[i]);
                 }
                 
@@ -172,11 +172,9 @@ public class Supernode {
             }
             if (myAddress == null){
                 System.err.println("Error: Server (There's no connection)");
-                System.exit(1);
             }
         } catch (Exception ex) {
             System.err.println("Error: Server (Could not retrieve address): " + ex.getMessage());
-            System.exit(1);
         }
     }
     
@@ -185,13 +183,13 @@ public class Supernode {
         output2.setText("Clients:\n");
         
         for(int i = 0; i < clientList.size(); i++) {
-            output2.append(" " + clientList.get(i) + "\n");
+            output2.append("-" + clientList.get(i) + "\n");
         }
         
         output2.append("Supernodes:\n");
         
         for(int i = 0; i < supernodes.size(); i++) {
-            output2.append(" " + supernodes.get(i) + "\n");
+            output2.append("-" + supernodes.get(i) + "\n");
         }
     }
 
