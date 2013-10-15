@@ -15,8 +15,10 @@ import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.List;
 import javax.swing.JTextArea;
 
 /**
@@ -47,6 +49,8 @@ public class Supernode {
             
     private TCPListener tcpListener;
     
+    protected List<String> supernodes;
+    
 
     public Supernode(JTextArea jTextArea1, JTextArea jTextArea2, boolean[] buttonContol) {
         this.output1 = jTextArea1;
@@ -54,6 +58,7 @@ public class Supernode {
         this.buttonContol = buttonContol;
         this.clientList = new ClientList();
         this.files = new Hashtable<String, String>();
+        this.supernodes = new ArrayList<String>();
         
     }
     
@@ -103,6 +108,13 @@ public class Supernode {
                 return;
             }
             else {
+                
+                String[] supernodesTemp = fromServer.split("-");
+                
+                for (int i = 0; i < supernodesTemp.length - 1; i++){
+                    supernodes.add(supernodesTemp[i]);
+                }
+                
                 connected = true;
                 this.buttonsControl();
 
@@ -110,8 +122,7 @@ public class Supernode {
                 in.close();
                 connectionSocket.close();
 
-                output2.setText(null);
-                output2.append("Clients:\n");
+                listClientsAndSupernodes();
 
                 output1.append("Connected to server successfully\n");
             }
@@ -170,11 +181,17 @@ public class Supernode {
     }
     
     //List all clients on the interface
-    protected void listClients() {
+    protected void listClientsAndSupernodes() {
         output2.setText("Clients:\n");
         
         for(int i = 0; i < clientList.size(); i++) {
             output2.append(" " + clientList.get(i) + "\n");
+        }
+        
+        output2.append("Supernodes:\n");
+        
+        for(int i = 0; i < supernodes.size(); i++) {
+            output2.append(" " + supernodes.get(i) + "\n");
         }
     }
 
@@ -205,9 +222,10 @@ public class Supernode {
                 output1.append("Disconnected\n");
             }
             
-            files = null;
+            files = new Hashtable<String, String>();
             output2.setText(null);
-            clientList = null;
+            clientList = new ClientList();
+            supernodes = new ArrayList<String>();
             
             connected = false;
             buttonsControl();

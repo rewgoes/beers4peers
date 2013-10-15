@@ -44,9 +44,13 @@ public class SupernodeTCPThread extends Thread{
                 System.out.println("Control: New request from client");
                 receiveClientsMessage(socket.getInetAddress().toString().split("/")[1]);
             }
-            else{
-                System.out.println("Control: Unknown client");
-            }
+            else
+                if (supernode.supernodes.contains(socket.getInetAddress().toString().split("/")[1])) {
+                    System.out.println("Control: New request from supernode");
+                    receiveClientsMessage(socket.getInetAddress().toString().split("/")[1]);
+                }
+                else
+                    System.out.println("Control: Unknown client");
     }
 
     //Receive a connection of a client from server, adding this client to its list
@@ -61,15 +65,33 @@ public class SupernodeTCPThread extends Thread{
             inputLine = in.readLine();
             
             if(inputLine != null){
+                //If it receives a supernode
+                if (inputLine.equals("supernode")){
+                    inputLine = in.readLine();
+                    
+                    if(inputLine != null){
+                        supernode.supernodes.add(inputLine);
+                        
+                        outputLine = "OK";
+                
+                        out.println(outputLine);
+                        
+                        supernode.output1.append("Supernode " + inputLine + " added to server successfully\n");
+                        
+                        return;
+                    }
+                }
+                
+                //If it receives a client
                 supernode.clientList.add(inputLine);
                 
                 outputLine = "OK";
                 
                 out.println(outputLine);
                 
-                supernode.listClients();
+                supernode.listClientsAndSupernodes();
 
-                supernode.output1.append("Client " + inputLine + " to server successfully\n");
+                supernode.output1.append("Client " + inputLine + " added to server successfully\n");
             }
 
             in.close();
@@ -87,7 +109,6 @@ public class SupernodeTCPThread extends Thread{
                         new InputStreamReader(
                         socket.getInputStream()));
             
-            //TODO: SupernodeTCPListenerThread: Answer server, accepting client
             inputLine = in.readLine();
             
             if(inputLine != null){
@@ -109,6 +130,9 @@ public class SupernodeTCPThread extends Thread{
         }
     }
 
+    //Receive a client disconnection and adivises server
+    //TODO: remove client's files from hashtable
+    //TODO: tell other supernodes to remove files
     private void disconnectClient() {
         
         String client = socket.getInetAddress().toString().split("/")[1];
@@ -142,7 +166,7 @@ public class SupernodeTCPThread extends Thread{
                 }
 
                 outTemp.println(outputLine);
-                supernode.listClients();
+                supernode.listClientsAndSupernodes();
             
                 System.out.println("Control: Client " + client +
                     " disconnected");
@@ -159,6 +183,7 @@ public class SupernodeTCPThread extends Thread{
         }
     }
 
+    //Receive a file from client and add it to the hashtable
     private void receiveFile(String clitentAddress) throws IOException {
         inputLine = in.readLine();
 
@@ -170,5 +195,44 @@ public class SupernodeTCPThread extends Thread{
         out.println(outputLine);
 
         supernode.output1.append("New file from " + clitentAddress + " added: " + inputLine + "\n");
+        
+        //If its a file from client and not from a supernode, so spread it
+        if (clitentAddress.contains(clitentAddress))
+            for(int i = 0; i < supernode.supernodes.size(); i++) {
+                sendFile(supernode.supernodes.get(i), inputLine);
+            }
+    }
+
+    //Send new file from client to all known supernodes
+    private void sendFile(String supernodeTemp, String filename) {
+        Socket connectionSocket;
+        PrintWriter out;
+        BufferedReader in;
+
+        try {
+            connectionSocket = new Socket();
+            connectionSocket.connect(new InetSocketAddress(supernodeTemp, Beers4Peers.PORT), 1000);
+            out = new PrintWriter(connectionSocket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+            
+            String fromServer;
+            String fromUser;
+
+            fromUser = "upload\n" + filename;
+            
+            out.println(fromUser);
+            
+            System.out.println("Control: Waiting supernode confirmation " + filename);
+            
+            fromServer = in.readLine();
+                
+            
+        } catch (UnknownHostException ex) {
+            System.err.println("Error: Client (Don't know about host: " +
+                    Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
+        } catch (IOException ex) {
+            System.err.println("Error: Client (Couldn't get I/O for the connection to: " + 
+                    Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
+        }
     }
 }

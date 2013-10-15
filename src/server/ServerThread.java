@@ -106,14 +106,16 @@ public class ServerThread extends Thread {
     }
 
     private void connectSupernode() {
+        String supernodes;
+        
         //It must be synchronized as it changes the control list
         synchronized(this){
-            supernodeList.addSupernode(socket.getInetAddress().toString().split("/")[1], socket.getPort());
+            supernodes = supernodeList.addSupernode(socket.getInetAddress().toString().split("/")[1]);
             ;// TODO: Undo all actions taken, and maybe change addSupernode() function, in case of error
         }
 
         //Send confirmation to supernode
-        outputLine = "OK";
+        outputLine = supernodes;
         out.println(outputLine);
 
         //Success
