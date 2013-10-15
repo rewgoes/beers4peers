@@ -295,7 +295,7 @@ public class SupernodeTCPThread extends Thread{
 
                         fromServer = inTemp.readLine();
 
-                        System.out.println("Control: Another supernode found file " + filename);
+                        System.out.println("Control: Another node found file " + filename);
 
                     } catch (UnknownHostException ex) {
                         System.err.println("Error: Client (Don't know about host: " +

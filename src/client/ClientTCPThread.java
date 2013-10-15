@@ -87,15 +87,16 @@ class ClientTCPThread extends Thread{
             
             if(inputLine != null){
                 if (inputLine.equals("download")){
-                    String file = in.readLine();
+                    String clientToSend = in.readLine();
 
-                    if(file != null){
-                        if (client.files.contains(file)){
-                            String clientToSend = in.readLine();
-                            
-                            if(clientToSend != null){
+                    if(clientToSend != null){
+                        String file = in.readLine();
+
+                        if(file != null){
+
+                            if (client.files.contains(file)){
                                 out.println("OK");
-                                
+
                                 sendFileTo(clientToSend, file);
 
                                 client.output1.append("File " + file + 
