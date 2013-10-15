@@ -34,29 +34,11 @@ public class SupernodeTCPThread extends Thread{
         messagesIntepreter();
     }
 
+    //Receive a message and interpreter it
     private void messagesIntepreter() {
-        //Receive a client or supernode from server
-        if (socket.getInetAddress().toString().split("/")[1].equals(Beers4Peers.SERVER_ADDRESS)){
-            System.out.println("Control: New request from server");
-            receiveClientFromServer();
-        }
-        else
-            if (supernode.clientList.contains(socket.getInetAddress().toString().split("/")[1])){
-                System.out.println("Control: New request from client");
-                receiveClientsSupernodeMessage(socket.getInetAddress().toString().split("/")[1]);
-            }
-            else
-                if (supernode.supernodes.contains(socket.getInetAddress().toString().split("/")[1])) {
-                    System.out.println("Control: New request from supernode");
-                    receiveClientsSupernodeMessage(socket.getInetAddress().toString().split("/")[1]);
-                }
-                else
-                    System.out.println("Control: Unknown client");
-    }
-
-    //Receive a connection of a client from server, adding this client to its list
-    private void receiveClientFromServer() {
-        try {            
+        try {
+            String clitentAddress = socket.getInetAddress().toString().split("/")[1];
+            
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(
                         new InputStreamReader(
@@ -66,57 +48,57 @@ public class SupernodeTCPThread extends Thread{
             
             if(inputLine != null){
                 //If it receives a supernode
-                if (inputLine.equals("supernode")){
-                    inputLine = in.readLine();
+                switch (inputLine) {
+                    case "supernode":
+                        inputLine = in.readLine();
+                        if(inputLine != null){
+                            supernode.supernodes.add(inputLine);
+                            
+                            outputLine = "OK";
                     
-                    if(inputLine != null){
-                        supernode.supernodes.add(inputLine);
+                            out.println(outputLine);
+                            
+                            supernode.output1.append("Supernode " + inputLine + " added successfully\n");
+                            
+                            supernode.listClientsAndSupernodes();
+                            
+                        }
+                        break;
+                    case "supernodeDisconnect":
+                        inputLine = in.readLine();
+                        if(inputLine != null){
+                            supernode.supernodes.remove(inputLine);
+                            
+                            outputLine = "OK";
+                    
+                            out.println(outputLine);
+                            
+                            supernode.output1.append("Supernode " + inputLine + " removed successfully\n");
                         
+                            
+                            supernode.listClientsAndSupernodes();
+                            
+                        }
+                        break;
+                    case "upload":
+                        receiveFile(clitentAddress);
+                        break;
+                    case "disconnectClient":             
+                        disconnectClient();
+                        break;
+                    case "download":
+                        findFileOwner();
                         outputLine = "OK";
-                
                         out.println(outputLine);
-                        
-                        supernode.output1.append("Supernode " + inputLine + " added successfully\n");
-                        
-                        supernode.listClientsAndSupernodes();
-                        
-                    }
-                }
-                else if (inputLine.equals("supernodeDisconnect")){
-                    inputLine = in.readLine();
-                    
-                    if(inputLine != null){
-                        supernode.supernodes.remove(inputLine);
-                        
+                        break;
+                    default:
+                        //If it receives a client
+                        supernode.clientList.add(inputLine);
                         outputLine = "OK";
-                
                         out.println(outputLine);
-                        
-                        supernode.output1.append("Supernode " + inputLine + " removed successfully\n");
-                        
                         supernode.listClientsAndSupernodes();
-                        
-                    }
-                }
-                else if (inputLine.equals("download")){
-                    findFileOwner();
-                    
-                    outputLine = "OK";
-                
-                    out.println(outputLine);
-                }
-                else{
-                
-                    //If it receives a client
-                    supernode.clientList.add(inputLine);
-
-                    outputLine = "OK";
-
-                    out.println(outputLine);
-
-                    supernode.listClientsAndSupernodes();
-
-                    supernode.output1.append("Client " + inputLine + " added to server successfully\n");
+                        supernode.output1.append("Client " + inputLine + " added to server successfully\n");
+                        break;
                 }
             }
 
@@ -126,34 +108,6 @@ public class SupernodeTCPThread extends Thread{
         } catch (IOException ex) {
             System.err.println("Error: ServerThread (Problem reading or writing in socket): " + ex.getMessage());
         }  
-    }
-
-    private void receiveClientsSupernodeMessage(String clitentAddress) {
-        try {            
-            out = new PrintWriter(socket.getOutputStream(), true);
-            in = new BufferedReader(
-                        new InputStreamReader(
-                        socket.getInputStream()));
-            
-            inputLine = in.readLine();
-            
-            if(inputLine != null){
-                if (inputLine.equals("upload")){
-                        receiveFile(clitentAddress);
-                }
-                else {
-                    if (inputLine.equals("disconnectClient")){             
-                        disconnectClient();
-                    }
-                }
-            }
-            
-            in.close();
-            out.close();
-            
-        } catch (IOException ex) {
-            System.err.println("Error: ServerThread (Problem reading or writing in socket): " + ex.getMessage());
-        }
     }
 
     //Receive a client disconnection and adivises server
