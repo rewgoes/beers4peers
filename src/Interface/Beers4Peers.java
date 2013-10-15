@@ -29,10 +29,25 @@ public class Beers4Peers extends javax.swing.JFrame {
     private boolean[] buttonContol;
     
     private String type;
+   
     
     
     public Beers4Peers() throws InterruptedException, SocketException{
         initComponents();
+        
+        this.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                if (!jButton5.getText().equals("Connect") && !jButton1.isEnabled()){
+                    jButton5.setText("Connect");
+                    if (type.equals("client"))
+                        client.disconnect();
+                    else
+                        supernode.disconnect();
+                }
+                System.exit(0);
+            }
+        });
         
         //Each button n is related to the position n-1 in controlButton
         //Please, if more buttons are added, change array's size
