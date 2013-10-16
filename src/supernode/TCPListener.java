@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package supernode;
 
 import Interface.Beers4Peers;
@@ -11,7 +7,9 @@ import static supernode.Supernode.myAddress;
 
 /**
  *
- * @author rafael
+ * @author rafael(rewgoes), matheus, andre
+ * 
+ * Class/thread responsible for listen for connections
  */
 public class TCPListener extends Thread{
 
@@ -23,10 +21,12 @@ public class TCPListener extends Thread{
         supernode = aThis;
     }
     
+    //When client disconnect, socket is closed, stopping accepting connections
+    //It makes the method run() return, what stops thread while not in use, so it need to be start again
     public void closeSocket(){
         try {
             synchronized(this){
-                listening = true;
+                listening = false;
             }
             supernodeSocket.close();
         } catch (IOException ex) {

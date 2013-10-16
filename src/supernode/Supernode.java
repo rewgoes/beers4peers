@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package supernode;
 
 import Interface.Beers4Peers;
@@ -23,10 +19,13 @@ import javax.swing.JTextArea;
 
 /**
  *
- * @author rafael
+ * @author rafael(rewgoes), matheus, andre
+ * 
+ * Class responsible for initialize the supernode side of the application
  */
 public class Supernode {
     
+    //TextArea in interface, use it to append messages
     protected JTextArea output1;
     protected JTextArea output2;
     
@@ -46,12 +45,14 @@ public class Supernode {
     
     //Hashtable of files
     protected Hashtable<String, String> files;
-            
+     
+    //Thread responsible to listen for connections
     private TCPListener tcpListener;
     
+    //A list of all the supernodes in the application
     protected List<String> supernodes;
     
-
+    //Supernode constructor, start as many objects as possible
     public Supernode(JTextArea jTextArea1, JTextArea jTextArea2, boolean[] buttonContol) {
         this.output1 = jTextArea1;
         this.output2 = jTextArea2;
@@ -62,9 +63,11 @@ public class Supernode {
         
     }
     
-    //Initialize client by calling its threads
+    //Initialize supernode by calling its threads
     public void connect() throws IOException {
         if (!connected){
+            if(myAddress == null) this.getAddress();
+            
             Socket connectionSocket;
             PrintWriter out;
             BufferedReader in;
@@ -126,14 +129,11 @@ public class Supernode {
                 listClientsAndSupernodes();
 
                 output1.append("Connected to server successfully\n");
+                
+                tcpListener = new TCPListener(this);
+                tcpListener.start();
             }
-        }
-        
-        this.getAddress();
-        
-        tcpListener = new TCPListener(this);
-        tcpListener.start();
-        //SupernodeUDPCheckAlive udpAlive = new SupernodeUDPCheckAlive(this);
+        }        
     }
     
     //Control interface's buttons
@@ -193,7 +193,8 @@ public class Supernode {
             output2.append("-" + supernodes.get(i) + "\n");
         }
     }
-
+    
+    //Disconnect from the application, setting all object to null or new
     public void disconnect(){ 
         Socket connectionSocket;
         PrintWriter out;
@@ -211,6 +212,8 @@ public class Supernode {
             String fromUser;
 
             fromUser = "disconnectSupernode";
+            
+            //TODO: send all file name to the supernode so it can remove from its list
             
             out.println(fromUser);
             

@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package server;
 
 import java.io.*;
@@ -9,7 +5,9 @@ import java.net.*;
 
 /**
  *
- * @author rafael
+ * @author rafael(rewgoes), matheus, andre
+ * 
+ * Class/thread responsible for handling connections
  */
 public class ServerThread extends Thread {
     
@@ -40,7 +38,7 @@ public class ServerThread extends Thread {
             System.out.println("Control: Message from " + socket.getInetAddress() + ":" + 
                     socket.getPort() + " content: " + inputLine);
             
-            //Verify message
+            //Verify/interpret message
             if(inputLine != null){
                 switch (inputLine) {
                     case "client":
@@ -70,22 +68,22 @@ public class ServerThread extends Thread {
         }
     }
 
+    //Connect a new client to the application
     private void connectClient() throws IOException {
         //It must be synchronized as it changes the control list
         synchronized(this){
+            //Call supernodeList, what controls the supernodeList and actions that need to be taken
             outputLine = supernodeList.addClient(socket.getInetAddress().toString().split("/")[1], socket.getPort());
         }
 
         if (outputLine == null){
-            System.err.println("Error: ServerThread (Could not add client)");// TODO: Undo all actions taken, and maybe change addClient() function, in case of error
+            System.err.println("Error: ServerThread (Could not add client)");
             outputLine = "serverOff";
             out.println(outputLine);
         }
         else{
             //Send supernodes's address that is responsible for this client
             out.println(outputLine);
-
-            // TODO: advise supernode that it got a new client
 
             //Wait for client confirmation
             inputLine = in.readLine();
@@ -96,22 +94,21 @@ public class ServerThread extends Thread {
                             socket.getPort() + " added to " + outputLine);
                 else{
                     System.err.println("Error: ServerThread (Could not add client)");
-                    ;// TODO: Undo all actions taken
                 }
             else{
                 System.err.println("Error: ServerThread (Could not add client)");
-                ;// TODO: Undo all actions taken
             }
         }
     }
 
+    //Connect a new supernode to the application
     private void connectSupernode() {
         String supernodes;
         
         //It must be synchronized as it changes the control list
         synchronized(this){
+            //Call supernodeList, what controls the supernodeList and actions that need to be taken
             supernodes = supernodeList.addSupernode(socket.getInetAddress().toString().split("/")[1]);
-            ;// TODO: Undo all actions taken, and maybe change addSupernode() function, in case of error
         }
 
         //Send confirmation to supernode
@@ -123,11 +120,13 @@ public class ServerThread extends Thread {
                 socket.getPort() + " added");
     }
 
+    //Disconnect a client from the application
     private void disconnectClient() throws IOException {
         
         String client = in.readLine();
         String supernode = socket.getInetAddress().toString().split("/")[1];
         
+        //Call supernodeList, what controls the supernodeList and actions that need to be taken
         supernodeList.removeClient(supernode, client);
         
         System.out.println("Control: Client " + client + " disconnected");
@@ -137,10 +136,12 @@ public class ServerThread extends Thread {
         out.println(outputLine);
     }
 
+    //Disconnect a supernode from the application
     private void disconnectSupernode() throws IOException {
         
         String supernode = socket.getInetAddress().toString().split("/")[1];
         
+        //Call supernodeList, what controls the supernodeList and actions that need to be taken
         supernodeList.removeSupernode(supernode);
         
         System.out.println("Control: Supernode " + supernode + " disconnected");

@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package supernode;
 
 import java.util.ArrayList;
@@ -10,9 +6,11 @@ import java.util.List;
 
 /**
  *
- * @author rafael
+ * @author rafael(rewgoes), matheus, andre
+ * 
  */
 
+//Represent the client information
 class ClientInfo{
     
     private String clientAddress;
@@ -35,6 +33,8 @@ class ClientInfo{
     }
 }
 
+
+//Class that holds all clients known by a supernode
 public class ClientList {
     
     private List<ClientInfo> clients;
@@ -48,6 +48,7 @@ public class ClientList {
         clients.add(new ClientInfo(clientAddress));
     }
     
+    //Check if client's addres is known
     public boolean contains(String supernodeAddress){
         for(Iterator<ClientInfo> i = clients.iterator(); i.hasNext(); ) {
             ClientInfo client = i.next();
@@ -57,14 +58,17 @@ public class ClientList {
         return false;
     }
     
+    //Get client address in the index i
     public String get(int i){
         return this.clients.get(i).toString();
     }
     
+    //Return the number of known clients
     public int size(){
         return clients.size();
     }
 
+    //Remove client from list
     public void removeClient(String client) {
         
         for(Iterator<ClientInfo> i = clients.iterator(); i.hasNext(); ) {

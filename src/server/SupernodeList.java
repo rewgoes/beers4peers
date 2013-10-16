@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package server;
 
 import Interface.Beers4Peers;
@@ -19,11 +15,13 @@ import supernode.ClientList;
 
 /**
  *
- * @author rafael
+ * @author rafael(rewgoes), matheus, andre
+ * 
  */
 
-//Class that holds all the supernode information in server
-
+/*
+ * Class that holds all clients known by a supernode
+ */
 class SupernodeInfo{
     
     protected ClientList clients;
@@ -34,7 +32,7 @@ class SupernodeInfo{
         this.clients = new ClientList();
     }
     
-    //Compares two supernodes
+    //Compares two supernodes address
     public boolean equals(String supernodeAddress) {
         if (this.supernodeAddress.equals(supernodeAddress)){
             return true;
@@ -42,33 +40,37 @@ class SupernodeInfo{
         return false;
     }
     
-    public int clientQtd(){
+    //Return client qTy
+    public int clientQty(){
         return clients.size();
     }
     
+    //Add new client to this supernode
     public void addClient(String clientAddress){
         clients.add(clientAddress);
     }
     
     //Return the supernode with less clients
     public boolean lessBusy(SupernodeInfo supernode){
-        return this.clientQtd() < supernode.clientQtd();
+        return this.clientQty() < supernode.clientQty();
     }
     
     @Override
     public String toString(){
-        
         return (this.supernodeAddress);
-        
-        //From now, the application has a unique port being used, so the port is not important
-        //return (this.supernodeAddress.toString() + this.supernodePort);
     }
 
+    //Remove client from this supernode
     void removeClient(String client) {
         clients.removeClient(client);
     }
 }
 
+
+/*
+ * Class that holds all the supernode information in server side
+ * Controls the supernodeList and actions that need to be taken when a node connect/disconnect
+ */
 public class SupernodeList {
  
     private List<SupernodeInfo> supernodes;
@@ -77,21 +79,20 @@ public class SupernodeList {
         this.supernodes = new ArrayList<SupernodeInfo>();
     }
     
-    //Add a new supernode to the application
+    //Add a new supernode to the application and inform other supernodes that a new supernode was added
     public String addSupernode(String supernodeAddress){
         String supernodesTemp = new String();
         
         for(Iterator<SupernodeInfo> i = supernodes.iterator(); i.hasNext(); ) {
             SupernodeInfo supernode = i.next();
             supernodesTemp = supernodesTemp.concat(supernode.toString() + "-");
-            informSupernode(supernode.toString(), supernodeAddress);
+            informNewSupernode(supernode.toString(), supernodeAddress);
         }
         
         supernodes.add(0, new SupernodeInfo(supernodeAddress));
         
         return supernodesTemp;
     }
-    
     
     //Check if the supernode already exists
     public boolean containsSupernode(String supernodeAddress, int port){
@@ -107,11 +108,14 @@ public class SupernodeList {
     public String addClient(String clientAddress, int clientPort){
         SupernodeInfo supernode;
         
+        //Order supernode by number of clients (less first)
         orderSupernodes();
        
+        //As list is ordered, will get the first supernode less busy and available
         for(Iterator<SupernodeInfo> i = supernodes.iterator(); i.hasNext(); ) {
             supernode = i.next();
             try {
+                //Check if supernode is available to client
                 if(supernodeAvailableToClient(supernode.toString(), clientAddress)){
                     supernode.addClient(clientAddress);
                     return supernode.toString();
@@ -124,7 +128,7 @@ public class SupernodeList {
         return null;
     }
     
-    //Select less busy supernode
+    //Order supernode by number of clients (less first)
     public void orderSupernodes(){
         
         SupernodeInfo supernodeTemp;
@@ -138,6 +142,7 @@ public class SupernodeList {
         }
     }
 
+    //Advises / checks if supernode can handle a new client (It connects to a supernode to ask)
     private boolean supernodeAvailableToClient(String supernode, String client) throws IOException {
         Socket connectionSocket;
         PrintWriter out;
@@ -189,6 +194,7 @@ public class SupernodeList {
         return false;
     }
 
+    //Remove client from the list of clients of one supernode
     void removeClient(String supernode, String client) {
         
         int i;
@@ -202,6 +208,7 @@ public class SupernodeList {
         supernodes.get(i).removeClient(client);
     }
     
+    //Remove a supernode from the list and tells to its clients that it disconnected
     void removeSupernode(String sSupernode) throws IOException{
         int i;
         
@@ -218,22 +225,25 @@ public class SupernodeList {
         
         int count;
         
-        //Save supernodes information in a new list
+        //Save list of clients from this supernode in a new list
         for(count = 0; count < size; count++) {
             clients.add(supernode.clients.get(count));
         }
         
         supernodes.remove(i);
         
+        //Tell clients to reconnect to a new supernode 
         for(count = 0; count < size; count++) {
             forceClientReconnect(clients.get(count));
         }
         
+        //Tell supernodes that a supernode disconnected
         for (count = 0; count < supernodes.size(); count++) {
             disconnectSupernodeFrom(supernodes.get(count).toString(), sSupernode);
         }
     }
     
+    //Tell clients to reconnect to a new supernode (Connects to a client)
     void forceClientReconnect(String client) throws IOException{     
         System.out.println("Control: Sending reconnect to client " +  client);
         
@@ -270,7 +280,8 @@ public class SupernodeList {
             
     }
 
-    private void informSupernode(String supernodeAddress, String supernodeAdded) {
+    //Inform other supernodes that a new supernode was added
+    private void informNewSupernode(String supernodeAddress, String supernodeAdded) {
         Socket connectionSocket;
         PrintWriter out;
         BufferedReader in;
@@ -294,12 +305,11 @@ public class SupernodeList {
             if(fromSupernode == null){
                 System.err.println("Error: Server (Some undefined reason)");
             }
-            else {
-                out.close();
-                in.close();
-                connectionSocket.close();
-            }
-
+            
+            out.close();
+            in.close();
+            connectionSocket.close();
+            
         } catch (UnknownHostException ex) {
             System.err.println("Error: Server (Don't know about host: " +
                     Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
@@ -309,13 +319,13 @@ public class SupernodeList {
         }
     }
 
+    //Tell supernodes that a supernode disconnected (Connects to a supernode)
     private void disconnectSupernodeFrom(String supernodeAddress, String supernodeDisconnected) {
         Socket connectionSocket;
         PrintWriter out;
         BufferedReader in;
 
         try {
-            //Try to connect with a 1,5 seconds timeout
             connectionSocket = new Socket();
             connectionSocket.connect(new InetSocketAddress(supernodeAddress, Beers4Peers.PORT), 1500);
             out = new PrintWriter(connectionSocket.getOutputStream(), true);

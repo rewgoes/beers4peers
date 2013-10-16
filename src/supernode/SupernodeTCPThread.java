@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package supernode;
 
 import Interface.Beers4Peers;
@@ -12,9 +8,12 @@ import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+
 /**
  *
- * @author rafael
+ * @author rafael(rewgoes), matheus, andre
+ * 
+ * Class/thread responsible for handling connections
  */
 public class SupernodeTCPThread extends Thread{
     
@@ -29,13 +28,9 @@ public class SupernodeTCPThread extends Thread{
         this.supernode = aThis;
     }
     
+    //Receive a message and interpret it
     @Override
     public void run() {
-        messagesIntepreter();
-    }
-
-    //Receive a message and interpreter it
-    private void messagesIntepreter() {
         try {
             String clitentAddress = socket.getInetAddress().toString().split("/")[1];
             
@@ -47,8 +42,8 @@ public class SupernodeTCPThread extends Thread{
             inputLine = in.readLine();
             
             if(inputLine != null){
-                //If it receives a supernode
                 switch (inputLine) {
+                    //If it receives a supernode to connect
                     case "supernode":
                         inputLine = in.readLine();
                         if(inputLine != null){
@@ -64,6 +59,7 @@ public class SupernodeTCPThread extends Thread{
                             
                         }
                         break;
+                    //If a supernode is disconnected
                     case "supernodeDisconnect":
                         inputLine = in.readLine();
                         if(inputLine != null){
@@ -80,19 +76,22 @@ public class SupernodeTCPThread extends Thread{
                             
                         }
                         break;
+                    //If a client uploaded a file
                     case "upload":
                         receiveFile(clitentAddress);
                         break;
+                    //If a client is disconnected
                     case "disconnectClient":             
                         disconnectClient();
                         break;
+                    //If a client/supernode is requesting to download something
                     case "download":
                         findFileOwner();
                         outputLine = "OK";
                         out.println(outputLine);
                         break;
                     default:
-                        //If it receives a client
+                        //If it receives a client's IP from server to connect
                         supernode.clientList.add(inputLine);
                         outputLine = "OK";
                         out.println(outputLine);
@@ -107,7 +106,7 @@ public class SupernodeTCPThread extends Thread{
             
         } catch (IOException ex) {
             System.err.println("Error: ServerThread (Problem reading or writing in socket): " + ex.getMessage());
-        }  
+        }
     }
 
     //Receive a client disconnection and adivises server
@@ -168,6 +167,7 @@ public class SupernodeTCPThread extends Thread{
         inputLine = in.readLine();
 
         if(inputLine != null){
+            //Add file to the hashtable
             supernode.files.put(inputLine, clientAddress);
         }
         outputLine = "OK";
@@ -179,11 +179,12 @@ public class SupernodeTCPThread extends Thread{
         //If its a file from client and not from a supernode, so spread it
         if (supernode.clientList.contains(clientAddress))
             for(int i = 0; i < supernode.supernodes.size(); i++) {
+                //Send this file to other supernodes, but now using supernode's address as argument
                 sendFile(supernode.supernodes.get(i), inputLine);
             }
     }
 
-    //Send new file from client to all known supernodes
+    //Send new file from client to all known supernodes, but now using supernode's address as argument
     private void sendFile(String supernodeTemp, String filename) {
         Socket connectionSocket;
         PrintWriter out;
@@ -216,6 +217,7 @@ public class SupernodeTCPThread extends Thread{
         }
     }
 
+    //Look for file owner but looking at the hashtable and redirecting message to other supernodes
     private void findFileOwner() throws IOException {
         String client = in.readLine();
         

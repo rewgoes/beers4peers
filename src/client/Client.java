@@ -1,4 +1,3 @@
-
 package client;
 
 import Interface.Beers4Peers;
@@ -135,7 +134,7 @@ public class Client {
         }
     }
     
-    //This method only gets the supernodes local address
+    //This method only gets the client's local address
     protected static void getAddress(){
         try {
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
@@ -294,7 +293,7 @@ public class Client {
         }
     }
 
-    //Disconnect from the application, setting all 
+    //Disconnect from the application, setting all object to null or new
     public void disconnect() {
         Socket connectionSocket;
         PrintWriter out;

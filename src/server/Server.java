@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package server;
 
 import java.io.IOException;
@@ -13,14 +9,16 @@ import java.util.Enumeration;
 
 /**
  *
- * @author rafael
+ * @author rafael(rewgoes), matheus, andre
+ * 
+ * Class responsible for initialize the server
  */
 public class Server {
     
     private static SupernodeList supernodeList;
     private static String myAddress;
     
-    //Start a server in the application, it must be unique
+    //Start a server in the application
     public static void main(String args[]) {
         
         //Get local address
@@ -35,7 +33,7 @@ public class Server {
            return;
         }
         
-        // Convert the argument to ensure that is it valid
+        // Convert the argument to ensure that it is valid
         int port = Integer.parseInt(args[0]);
         
         if (port >= 49152 && port <= 65535)
@@ -46,6 +44,7 @@ public class Server {
         }
     }
     
+    //This method only gets the supernodes local address
     private static void getAddress(){
         try {
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
@@ -73,6 +72,7 @@ public class Server {
         }
     }
     
+    //Listen for connection at address and port parameters
     private static void listenConnection(int port){
         ServerSocket serverSocket = null;
         boolean listening = true;
