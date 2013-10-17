@@ -63,7 +63,7 @@ class ClientTCPThread extends Thread{
 
                             if(file != null){
 
-                                if (client.files.contains(file)){
+                                if (client.files.containsKey(file)){
                                     out.println("OK");
 
                                     sendFileTo(clientToSend, file);
@@ -72,8 +72,6 @@ class ClientTCPThread extends Thread{
                                             " sent to " + clientToSend + "\n");
                                 }
                             }
-                            
-                            client.output1.append("File " + file + " sent\n");
                         }
                         break;
                     //Another client is sending the file
@@ -108,20 +106,18 @@ class ClientTCPThread extends Thread{
             outStream = socket.getOutputStream();
             outPrint = new PrintWriter(connectionSocket.getOutputStream(), true);
             inBuffer = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
-            
-            outPrint.println("newFile");
 
             File file = new File(client.files.get(filename));
             
-            outPrint.println(filename);
+            outPrint.println("newFile\n" + filename);
 
             //Wait for answer
             if(inBuffer.readLine() != null){
             
                 int count;
                 byte[] buffer = new byte[1024];
-                BufferedInputStream in = new BufferedInputStream(new FileInputStream(file));
-                while ((count=in.read(buffer, 0, buffer.length)) != -1) {
+                BufferedInputStream inTemp = new BufferedInputStream(new FileInputStream(file));
+                while ((count=inTemp.read(buffer, 0, buffer.length)) != -1) {
                     outStream.write(buffer, 0, count);
                 }
             }
@@ -144,14 +140,11 @@ class ClientTCPThread extends Thread{
 
     private void receiveFile() {
         try {
-            InputStream inStream;
             PrintWriter outPrint;
             BufferedReader inBuffer;
 
-            outPrint = new PrintWriter(socket.getOutputStream(), true);
             inBuffer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
-            inStream = socket.getInputStream();
+            outPrint = new PrintWriter(socket.getOutputStream(), true);
 
             String filename = inBuffer.readLine();
 
@@ -163,8 +156,8 @@ class ClientTCPThread extends Thread{
 
                 byte[] buffer = new byte[1024];
                 int count;
-                InputStream in = socket.getInputStream();
-                while((count=in.read(buffer, 0, buffer.length)) != -1){
+                InputStream inStream = socket.getInputStream();
+                while((count=inStream.read(buffer, 0, buffer.length)) != -1){
                     fos.write(buffer, 0, count);
                 }
 

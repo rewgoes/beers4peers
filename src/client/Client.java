@@ -188,8 +188,8 @@ public class Client {
     //Adds a new file to its hashtable
     public void newFile(String sPath) {
         //Get filename from the path, removing \(windows) and /(linux)
-        String path = sPath.replace("\\", "/");;
-        String filename = sPath.split("/")[sPath.split("/").length - 1];
+        String path = sPath.replace("\\", "/");
+        String filename = path.split("/")[path.split("/").length - 1];
         
         //Send filename to the supernode responsible for this client
         Socket connectionSocket;
@@ -217,7 +217,7 @@ public class Client {
             
             //Supernode received file
             if(fromServer != null){
-                output1.append("New file available: " + filename + "\n");
+                output1.append("New file available: " + filename + " in " + path + "\n");
             } else {
                 System.err.println("Error: Client (Supernode didn't answer)");
                 output1.append("Failed to connect: Failed to send file\n");
