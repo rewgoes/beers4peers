@@ -1,10 +1,20 @@
 package client;
 
+import Interface.Beers4Peers;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 
 /**
  *
@@ -44,7 +54,7 @@ class ClientTCPThread extends Thread{
                         client.forceReconnect();
                         client.output1.append("Client " + inputLine + " reconnected to server successfully\n");
                         break;
-                    //Supernode send a message to client asking to download a file
+                    //Supernode send a message to client asking to client to send a file
                     case "download":
                         System.out.println("Control: Preparing to upload file");
                         String clientToSend = in.readLine();
@@ -62,7 +72,13 @@ class ClientTCPThread extends Thread{
                                             " sent to " + clientToSend + "\n");
                                 }
                             }
+                            
+                            client.output1.append("File " + file + " sent\n");
                         }
+                        break;
+                    //Another client is sending the file
+                    case "newFile":
+                        receiveFile();
                         break;
                 }
                 
@@ -76,10 +92,98 @@ class ClientTCPThread extends Thread{
         }
     }
     
-    private void sendFileTo(String clientToSend, String file) {
+    
+    //send file to client interested on it
+    private void sendFileTo(String clientToSend, String filename) {
+              
+        Socket connectionSocket;
+        OutputStream outStream;
+        PrintWriter outPrint;
+        BufferedReader inBuffer;
+
+        try {
+            connectionSocket = new Socket();
+            connectionSocket.connect(new InetSocketAddress(clientToSend, Beers4Peers.PORT), 1000);
+            System.out.println("Control: Connected to client. Sending file...");
+            outStream = socket.getOutputStream();
+            outPrint = new PrintWriter(connectionSocket.getOutputStream(), true);
+            inBuffer = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+
+            File file = new File(client.files.get(filename));
+            
+            outPrint.println(filename);
+
+            //Wait for answer
+            if(inBuffer.readLine() != null){
+            
+                int count;
+                byte[] buffer = new byte[1024];
+                BufferedInputStream in = new BufferedInputStream(new FileInputStream(file));
+                while ((count=in.read(buffer, 0, buffer.length)) != -1) {
+                    outStream.write(buffer, 0, count);
+                }
+            }
+            
+        } catch (UnknownHostException ex) {
+            System.err.println("Error: Client (Don't know about host: " +
+                    Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
+
+            client.output1.append("Failed to connect: Client is offline\n");
+
+        } catch (IOException ex) {
+            System.err.println("Error: Client (Couldn't get I/O for the connection to: " + 
+                    Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
+
+            client.output1.append("Failed to connect: Client is offline\n");
+
+        }
         
-        //send file to client interested on it
-        
+    }
+
+    private void receiveFile() {
+        try {
+            InputStream inStream;
+            PrintWriter outPrint;
+            BufferedReader inBuffer;
+
+            outPrint = new PrintWriter(socket.getOutputStream(), true);
+            inBuffer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+            inStream = socket.getInputStream();
+
+            String filename = inBuffer.readLine();
+
+            if (filename != null){
+                outPrint.println("OK");
+
+                FileOutputStream fos = new FileOutputStream("download/" + filename);
+                BufferedOutputStream out = new BufferedOutputStream(fos);
+
+                byte[] buffer = new byte[1024];
+                int count;
+                InputStream in = socket.getInputStream();
+                while((count=in.read(buffer, 0, buffer.length)) != -1){
+                    fos.write(buffer, 0, count);
+                }
+
+                fos.close();
+                
+            }
+
+            socket.close();
+         } catch (UnknownHostException ex) {
+            System.err.println("Error: Client (Don't know about host: " +
+                    Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
+
+            client.output1.append("Failed to connect: Client is offline\n");
+
+        } catch (IOException ex) {
+            System.err.println("Error: Client (Couldn't get I/O for the connection to: " + 
+                    Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
+
+            client.output1.append("Failed to connect: Client is offline\n");
+
+        }
     }
     
 }

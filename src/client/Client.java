@@ -188,9 +188,8 @@ public class Client {
     //Adds a new file to its hashtable
     public void newFile(String sPath) {
         //Get filename from the path, removing \(windows) and /(linux)
-        String path = sPath;
+        String path = sPath.replace("\\", "/");;
         String filename = sPath.split("/")[sPath.split("/").length - 1];
-        filename = filename.split("\\\\")[filename.split("\\\\").length - 1];
         
         //Send filename to the supernode responsible for this client
         Socket connectionSocket;
