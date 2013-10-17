@@ -83,6 +83,8 @@ public class SupernodeTCPThread extends Thread{
                     //If a client is disconnected
                     case "disconnectClient":             
                         disconnectClient();
+                        outputLine = "OK";
+                        out.println(outputLine);
                         break;
                     //If a client/supernode is requesting to download something
                     case "download":

@@ -108,6 +108,8 @@ class ClientTCPThread extends Thread{
             outStream = socket.getOutputStream();
             outPrint = new PrintWriter(connectionSocket.getOutputStream(), true);
             inBuffer = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+            
+            outPrint.println("newFile");
 
             File file = new File(client.files.get(filename));
             
