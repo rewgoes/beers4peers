@@ -19,11 +19,11 @@ import java.net.UnknownHostException;
 /**
  *
  * @author rafael(rewgoes), matheus, andre
- * 
+ *
  * Class/thread responsible for handling connections
  */
 class ClientTCPThread extends Thread{
-    
+
     private Socket socket;
     private Client client;
     private PrintWriter out;
@@ -34,19 +34,19 @@ class ClientTCPThread extends Thread{
         this.client = client;
         this.socket = socket;
     }
-    
+
     //Interprets first line of the message received
     @Override
     public void run() {
-        try {            
+        try {
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(
                         new InputStreamReader(
                         socket.getInputStream()));
-            
+
             //TODO: SupernodeTCPListenerThread: Answer server, accepting client
             inputLine = in.readLine();
-            
+
             if(inputLine != null){
                 switch (inputLine) {
                     //Server sends a reconnect message to client when its supernode disconnects
@@ -68,7 +68,7 @@ class ClientTCPThread extends Thread{
 
                                     sendFileTo(clientToSend, file);
 
-                                    client.output1.append("File " + file + 
+                                    client.output1.append("File " + file +
                                             " sent to " + clientToSend + "\n");
                                 }
                             }
@@ -79,21 +79,21 @@ class ClientTCPThread extends Thread{
                         receiveFile();
                         break;
                 }
-                
+
             }
 
             in.close();
             out.close();
-            
+
         } catch (IOException ex) {
             System.err.println("Error: ServerThread (Problem reading or writing in socket): " + ex.getMessage());
         }
     }
-    
-    
+
+
     //send file to client interested on it
     private void sendFileTo(String clientToSend, String filename) {
-              
+
         Socket connectionSocket;
         OutputStream outStream;
         PrintWriter outPrint;
@@ -108,12 +108,12 @@ class ClientTCPThread extends Thread{
             inBuffer = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
 
             File file = new File(client.files.get(filename));
-            
+
             outPrint.println("newFile\n" + filename);
 
             //Wait for answer
             if(inBuffer.readLine() != null){
-            
+
                 int count;
                 byte[] buffer = new byte[1024];
                 BufferedInputStream inTemp = new BufferedInputStream(new FileInputStream(file));
@@ -121,7 +121,7 @@ class ClientTCPThread extends Thread{
                     outStream.write(buffer, 0, count);
                 }
             }
-            
+
         } catch (UnknownHostException ex) {
             System.err.println("Error: Client (Don't know about host: " +
                     Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
@@ -129,13 +129,13 @@ class ClientTCPThread extends Thread{
             client.output1.append("Failed to connect: Client is offline\n");
 
         } catch (IOException ex) {
-            System.err.println("Error: Client (Couldn't get I/O for the connection to: " + 
+            System.err.println("Error: Client (Couldn't get I/O for the connection to: " +
                     Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
 
             client.output1.append("Failed to connect: Client is offline\n");
 
         }
-        
+
     }
 
     private void receiveFile() {
@@ -162,7 +162,7 @@ class ClientTCPThread extends Thread{
                 }
 
                 fos.close();
-                
+
             }
 
             socket.close();
@@ -173,12 +173,12 @@ class ClientTCPThread extends Thread{
             client.output1.append("Failed to connect: Client is offline\n");
 
         } catch (IOException ex) {
-            System.err.println("Error: Client (Couldn't get I/O for the connection to: " + 
+            System.err.println("Error: Client (Couldn't get I/O for the connection to: " +
                     Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
 
             client.output1.append("Failed to connect: Client is offline\n");
 
         }
     }
-    
+
 }

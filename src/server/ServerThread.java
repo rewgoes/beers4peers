@@ -6,25 +6,25 @@ import java.net.*;
 /**
  *
  * @author rafael(rewgoes), matheus, andre
- * 
+ *
  * Class/thread responsible for handling connections
  */
 public class ServerThread extends Thread {
-    
+
     private Socket socket;
     private SupernodeList supernodeList;
     private PrintWriter out;
     private BufferedReader in;
     private String inputLine, outputLine;
- 
+
     public ServerThread(Socket socket, SupernodeList supernodeList) throws IOException {
         this.socket = socket;
         this.supernodeList = supernodeList;
     }
- 
+
     @Override
     public void run() {
- 
+
         try {
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(
@@ -34,10 +34,10 @@ public class ServerThread extends Thread {
             String inputLine, outputLine;
 
             inputLine = in.readLine();
-            
-            System.out.println("Control: Message from " + socket.getInetAddress() + ":" + 
+
+            System.out.println("Control: Message from " + socket.getInetAddress() + ":" +
                     socket.getPort() + " content: " + inputLine);
-            
+
             //Verify/interpret message
             if(inputLine != null){
                 switch (inputLine) {
@@ -58,7 +58,7 @@ public class ServerThread extends Thread {
             else {
                 System.err.println("Error: ServerThread (Could not add client)");
             }
-            
+
             out.close();
             in.close();
             socket.close();
@@ -104,7 +104,7 @@ public class ServerThread extends Thread {
     //Connect a new supernode to the application
     private void connectSupernode() {
         String supernodes;
-        
+
         //It must be synchronized as it changes the control list
         synchronized(this){
             //Call supernodeList, what controls the supernodeList and actions that need to be taken
@@ -122,15 +122,15 @@ public class ServerThread extends Thread {
 
     //Disconnect a client from the application
     private void disconnectClient() throws IOException {
-        
+
         String client = in.readLine();
         String supernode = socket.getInetAddress().toString().split("/")[1];
-        
+
         //Call supernodeList, what controls the supernodeList and actions that need to be taken
         supernodeList.removeClient(supernode, client);
-        
+
         System.out.println("Control: Client " + client + " disconnected");
-        
+
         //Send confirmation to supernode
         outputLine = "OK";
         out.println(outputLine);
@@ -138,18 +138,18 @@ public class ServerThread extends Thread {
 
     //Disconnect a supernode from the application
     private void disconnectSupernode() throws IOException {
-        
+
         String supernode = socket.getInetAddress().toString().split("/")[1];
-        
+
         //Call supernodeList, what controls the supernodeList and actions that need to be taken
         supernodeList.removeSupernode(supernode);
-        
+
         System.out.println("Control: Supernode " + supernode + " disconnected");
-        
+
         //Send confirmation to supernode
         outputLine = "OK";
         out.println(outputLine);
     }
 
-    
+
 }

@@ -12,11 +12,11 @@ import javax.swing.JFileChooser;
 /**
  *
  * @author rafael(rewgoes), matheus, andre
- * 
+ *
  * Class/thread responsible for handling connections
  */
 public class Beers4Peers extends javax.swing.JFrame {
-    
+
     public static final int PORT = 50001;
     public static String SERVER_ADDRESS;
     public static int SERVER_PORT;
@@ -25,13 +25,13 @@ public class Beers4Peers extends javax.swing.JFrame {
     private Supernode supernode;
     private ButtonsControlThread control;
     private boolean[] buttonContol;
-    
+
     private String type;
-   
-    
+
+
     public Beers4Peers(){
         initComponents();
-        
+
         this.addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent windowEvent) {
@@ -45,28 +45,28 @@ public class Beers4Peers extends javax.swing.JFrame {
                 System.exit(0);
             }
         });
-        
+
         //Each button n is related to the position n-1 in controlButton
         //Please, if more buttons are added, change array's size
         buttonContol = new boolean[5];
-        
+
         buttonContol[0] = true;
         buttonContol[1] = true;
         buttonContol[2] = false;
         buttonContol[3] = false;
         buttonContol[4] = false;
-        
-        
+
+
         client = new Client(jTextArea1, jTextArea2, buttonContol);
         supernode = new Supernode(jTextArea1, jTextArea2, buttonContol);
-        
+
         control = new ButtonsControlThread(buttonContol, clientConnect, supernodeConnect, upload, download, connectDisconnect);
-        
+
         control.start();
     }
-    
+
     public void initClient() throws InterruptedException, SocketException{
-        
+
         try {
             client.connect();
             if (!buttonContol[0])
@@ -76,9 +76,9 @@ public class Beers4Peers extends javax.swing.JFrame {
             Logger.getLogger(Beers4Peers.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     public void initSupernode() throws InterruptedException, SocketException{
-        
+
         try {
             supernode.connect();
             if (!buttonContol[0])
@@ -88,7 +88,7 @@ public class Beers4Peers extends javax.swing.JFrame {
             Logger.getLogger(Beers4Peers.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -268,12 +268,12 @@ public class Beers4Peers extends javax.swing.JFrame {
         JFileChooser fc = new JFileChooser();
         fc.showOpenDialog(null);
         File f = fc.getSelectedFile();
-        
+
         String filename = f.getAbsolutePath();
-        
+
         if (filename != null)
             client.newFile(filename);
-            
+
     }//GEN-LAST:event_uploadActionPerformed
 
     private void connectDisconnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectDisconnectActionPerformed
@@ -308,25 +308,25 @@ public class Beers4Peers extends javax.swing.JFrame {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
          */
-        
+
         //Check if argument's port is valid to the application
         if( args.length != 2 ){
            System.out.println("usage: Beers4Peers address port");
            return;
         }
-        
+
         SERVER_ADDRESS = args[0];
-        
+
         // Convert the argument to ensure that is it valid
         SERVER_PORT = Integer.parseInt(args[1]);
-        
+
         if (!(SERVER_PORT >= 49152 && SERVER_PORT <= 65535)){
             System.out.println( "usage: Beers4Peers address port [49152-65535]" );
             return;
         }
-        
+
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
