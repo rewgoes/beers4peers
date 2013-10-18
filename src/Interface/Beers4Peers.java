@@ -36,13 +36,15 @@ public class Beers4Peers extends javax.swing.JFrame {
             @Override
             public void windowClosing(java.awt.event.WindowEvent windowEvent) {
                 if (!connectDisconnect.getText().equals("Connect") && !clientConnect.isEnabled()){
-                    connectDisconnect.setText("Connect");
-                    if (type.equals("client"))
-                        client.disconnect();
+                    if (type.equals("client")){
+                        if(client.disconnect())
+                            System.exit(0);
+                    }
                     else
-                        supernode.disconnect();
+                        if (supernode.disconnect()){
+                            System.exit(0);
+                        }
                 }
-                System.exit(0);
             }
         });
 
@@ -280,18 +282,20 @@ public class Beers4Peers extends javax.swing.JFrame {
         // TODO add your handling code here:
         try {
             if (connectDisconnect.getText().equals("Connect")){
-                if (type.equals("client"))
+                if (type.equals("client")){
                     if (client.connect())
                         connectDisconnect.setText("Disconnect");
+                }
                 else
                     if (supernode.connect()){
                         connectDisconnect.setText("Disconnect");
                     }
             } else {
-                if (type.equals("client"))
+                if (type.equals("client")){
                     if (client.disconnect()){
                         connectDisconnect.setText("Connect");
                     }
+                }
                 else
                     if (supernode.disconnect()){
                         connectDisconnect.setText("Connect");

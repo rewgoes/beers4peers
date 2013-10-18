@@ -143,6 +143,7 @@ public class ServerThread extends Thread {
         
         //There is only one supernode
         if(supernodeList.size() == 1){
+            System.out.println("Controle: There is only one supernode. It can't disconnect");
             outputLine = "disconnectionRefused";
             out.println(outputLine);
             return;

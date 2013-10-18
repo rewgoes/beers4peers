@@ -189,17 +189,15 @@ public class SupernodeTCPThread extends Thread{
             String[] files = inputLine.split("\\|");
 
             for(int i = 0; i < files.length; i++){
-                if(supernode.files.put(files[i], clientAddress) != null){
-                    System.out.println("Control: File " + files[i] + " removed");
-                }
+                supernode.files.put(files[i], clientAddress);
+                System.out.println("Control: File " + files[i] + " removed");
+                supernode.output1.append("New file from " + clientAddress + " added: " + files[i] + "\n");
             }
         }
         
         outputLine = "OK";
 
-        out.println(outputLine);
-
-        supernode.output1.append("New file from " + clientAddress + " added: " + inputLine + "\n");
+        out.println(outputLine);;
 
         //If its a file from client and not from a supernode, so spread it
         if (supernode.clientList.contains(clientAddress))
