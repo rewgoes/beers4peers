@@ -12,7 +12,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- * 
+ *
  *
  * @author rafael(rewgoes), matheus, andre
  *
@@ -43,10 +43,10 @@ public class SupernodeTCPThread extends Thread{
                         socket.getInputStream()));
 
             inputLine = in.readLine();
-            
-            System.out.println("Control: Message from " + socket.getInetAddress() + ":" + 
+
+            System.out.println("Control: Message from " + socket.getInetAddress() + ":" +
                     socket.getPort() + " content: " + inputLine);
-            
+
             if(inputLine != null){
                 switch (inputLine) {
                     //If it receives a supernode to connect
@@ -70,10 +70,10 @@ public class SupernodeTCPThread extends Thread{
                         inputLine = in.readLine();
                         if(inputLine != null){
                             supernode.supernodes.remove(inputLine);
-                            
+
                             //Remove files from supernode
                             removeFilesFrom(inputLine);
-                            
+
                             outputLine = "OK";
 
                             out.println(outputLine);
@@ -157,9 +157,9 @@ public class SupernodeTCPThread extends Thread{
             if (fromServer != null){
                 synchronized(this){
                     removeFilesFrom(client);
-                    
+
                     supernode.clientList.removeClient(client);
-                    
+
                     supernode.output1.append("Client " + client + " disconnected\n");
                 }
 
@@ -176,7 +176,7 @@ public class SupernodeTCPThread extends Thread{
             System.err.println("Error: SupernodeTCHThread (Don't know about host: " +
                     Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
         } catch (IOException ex) {
-            System.err.println("Error: SupernodeTCHThread (Couldn't get I/O for the connection to: " + 
+            System.err.println("Error: SupernodeTCHThread (Couldn't get I/O for the connection to: " +
                     Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
         }
     }
@@ -184,7 +184,7 @@ public class SupernodeTCPThread extends Thread{
     //Receive a file from client and add it to the hashtable
     private void receiveFile(String clientAddress) throws IOException {
         inputLine = in.readLine();
-        
+
         if (inputLine != null){
             String[] files = inputLine.split("\\|");
 
@@ -194,7 +194,7 @@ public class SupernodeTCPThread extends Thread{
                 supernode.output1.append("New file from " + clientAddress + " added: " + files[i] + "\n");
             }
         }
-        
+
         outputLine = "OK";
 
         out.println(outputLine);;
@@ -218,24 +218,24 @@ public class SupernodeTCPThread extends Thread{
             connectionSocket.connect(new InetSocketAddress(supernodeAddress, Beers4Peers.PORT), 1000);
             outTemp = new PrintWriter(connectionSocket.getOutputStream(), true);
             inTemp = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
-            
+
             String fromServer;
             String fromUser;
 
             fromUser = "upload\n" + filename;
-            
+
             outTemp.println(fromUser);
-            
+
             System.out.println("Control: Waiting supernode confirmation " + filename);
-            
+
             fromServer = inTemp.readLine();
-                
-            
+
+
         } catch (UnknownHostException ex) {
             System.err.println("Error: SupernodeTCHThread (Don't know about host: " +
                     Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
         } catch (IOException ex) {
-            System.err.println("Error: SupernodeTCHThread (Couldn't get I/O for the connection to: " + 
+            System.err.println("Error: SupernodeTCHThread (Couldn't get I/O for the connection to: " +
                     Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
         }
     }
@@ -244,50 +244,60 @@ public class SupernodeTCPThread extends Thread{
     private void findFileOwner() throws IOException {
         String client = in.readLine();
 
-        if (client != null){
+        // There's nothing to do if the client is empty
+        if (client == null) {
+            return;
+        }
 
-            String filename = in.readLine();
+        String filename = in.readLine();
 
-            if (filename != null) {
+        // same with filename
+        if (filename == null) {
+            return;
+        }
 
-                String fileOwner = supernode.files.get(filename);
+        String fileOwner = supernode.files.get(filename);
 
-                if (fileOwner != null){
-                    Socket connectionSocket;
-                    PrintWriter outTemp;
-                    BufferedReader inTemp;
-                    
-                    try {
-                        connectionSocket = new Socket();
-                        connectionSocket.connect(new InetSocketAddress(fileOwner, Beers4Peers.PORT), 1000);
-                        outTemp = new PrintWriter(connectionSocket.getOutputStream(), true);
-                        inTemp = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+        // and fileOnwer
+        if (fileOwner == null) {
+            return;
+        }
 
-                        String fromServer;
-                        String fromUser;
+        // Now, if all that's necessary has been passed, we can open the socket
+        // to download the file
 
-                        fromUser = "download\n" + client + "\n" + filename;
+        Socket connectionSocket;
+        PrintWriter outTemp;
+        BufferedReader inTemp;
 
-                        outTemp.println(fromUser);
+        try {
+            connectionSocket = new Socket();
+            connectionSocket.connect(new InetSocketAddress(fileOwner, Beers4Peers.PORT), 1000);
+            outTemp = new PrintWriter(connectionSocket.getOutputStream(), true);
+            inTemp = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
 
-                        System.out.println("Control: Waiting supernode confirmation " + filename);
+            String fromServer;
+            String fromUser;
 
-                        fromServer = inTemp.readLine();
+            fromUser = "download\n" + client + "\n" + filename;
 
-                        System.out.println("Control: Another node found file " + filename);
+            outTemp.println(fromUser);
 
-                    } catch (UnknownHostException ex) {
-                        System.err.println("Error: SupernodeTCHThread (Don't know about host: " +
-                                Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
-                    } catch (IOException ex) {
-                        System.err.println("Error: SupernodeTCHThread (Couldn't get I/O for the connection to: " + 
-                                Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
-                    }
-                }
-            }
+            System.out.println("Control: Waiting supernode confirmation " + filename);
+
+            fromServer = inTemp.readLine();
+
+            System.out.println("Control: Another node found file " + filename);
+
+        } catch (UnknownHostException ex) {
+            System.err.println("Error: SupernodeTCHThread (Don't know about host: " +
+                    Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
+        } catch (IOException ex) {
+            System.err.println("Error: SupernodeTCHThread (Couldn't get I/O for the connection to: " +
+                    Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
         }
     }
-    
+
     //Remove files from hashtable that is from client/supernode
     private void removeFilesFrom(String client) {
         String filesToRemove = "";
@@ -312,7 +322,7 @@ public class SupernodeTCPThread extends Thread{
             }
         }
     }
-    
+
     private void callSupernodesToRemoveFile(String supernodeAddress, String filesNames) {
         Socket connectionSocket;
         PrintWriter outTemp;
@@ -323,21 +333,21 @@ public class SupernodeTCPThread extends Thread{
             connectionSocket.connect(new InetSocketAddress(supernodeAddress, Beers4Peers.PORT), 1000);
             outTemp = new PrintWriter(connectionSocket.getOutputStream(), true);
             inTemp = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
-            
+
             String fromServer;
             String fromUser;
 
             fromUser = "removeFiles\n" + filesNames;
-            
+
             outTemp.println(fromUser);
-            
+
             fromServer = inTemp.readLine();
-                
+
         } catch (UnknownHostException ex) {
             System.err.println("Error: SupernodeTCHThread (Don't know about host: " +
                     Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
         } catch (IOException ex) {
-            System.err.println("Error: SupernodeTCHThread (Couldn't get I/O for the connection to: " + 
+            System.err.println("Error: SupernodeTCHThread (Couldn't get I/O for the connection to: " +
                     Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
         }
     }
@@ -346,10 +356,10 @@ public class SupernodeTCPThread extends Thread{
     private void removeListOfFiles() {
         try {
             inputLine = in.readLine();
-            
+
             if (inputLine != null){
                 String[] files = inputLine.split("\\|");
-                
+
                 for(int i = 0; i < files.length; i++){
                     if(supernode.files.remove(files[i]) != null){
                         System.out.println("Control: File " + files[i] + " removed");
@@ -360,7 +370,7 @@ public class SupernodeTCPThread extends Thread{
             System.err.println("Error: SupernodeTCHThread (Don't know about host: " +
                     Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
         } catch (IOException ex) {
-            System.err.println("Error: SupernodeTCHThread (Couldn't get I/O for the connection to: " + 
+            System.err.println("Error: SupernodeTCHThread (Couldn't get I/O for the connection to: " +
                     Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
         }
     }
