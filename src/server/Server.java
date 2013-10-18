@@ -29,7 +29,7 @@ public class Server {
 
         //Check if argument's port is valid to the application
         if( args.length != 1 ){
-           System.out.println("usage: Server port");
+           System.err.println("Usage: Server <port>");
            return;
         }
 
@@ -39,7 +39,7 @@ public class Server {
         if (port >= 49152 && port <= 65535)
             listenConnection(port);
         else {
-            System.out.println( "usage: Server port [49152-65535]" );
+            System.err.println( "Error: the port must be between 49152 and 65535." );
             return;
         }
     }
