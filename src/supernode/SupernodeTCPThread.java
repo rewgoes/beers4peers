@@ -41,6 +41,9 @@ public class SupernodeTCPThread extends Thread{
             
             inputLine = in.readLine();
             
+            System.out.println("Control: Message from " + socket.getInetAddress() + ":" + 
+                    socket.getPort() + " content: " + inputLine);
+            
             if(inputLine != null){
                 switch (inputLine) {
                     //If it receives a supernode to connect

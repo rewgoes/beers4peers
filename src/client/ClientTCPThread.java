@@ -47,6 +47,9 @@ class ClientTCPThread extends Thread{
             //TODO: SupernodeTCPListenerThread: Answer server, accepting client
             inputLine = in.readLine();
             
+            System.out.println("Control: Message from " + socket.getInetAddress() + ":" + 
+                    socket.getPort() + " content: " + inputLine);
+            
             if(inputLine != null){
                 switch (inputLine) {
                     //Server sends a reconnect message to client when its supernode disconnects
@@ -102,35 +105,41 @@ class ClientTCPThread extends Thread{
         try {
             connectionSocket = new Socket();
             connectionSocket.connect(new InetSocketAddress(clientToSend, Beers4Peers.PORT), 1000);
-            System.out.println("Control: Connected to client. Sending file...");
-            outStream = socket.getOutputStream();
+            System.out.println("Control: Connected to client");
+            
+            File file = new File(client.files.get(filename));
+            
             outPrint = new PrintWriter(connectionSocket.getOutputStream(), true);
             inBuffer = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
-
-            File file = new File(client.files.get(filename));
+            
+            outStream = connectionSocket.getOutputStream();
             
             outPrint.println("newFile\n" + filename);
 
             //Wait for answer
             if(inBuffer.readLine() != null){
-            
+                System.out.println("Control: Sending file...");
                 int count;
                 byte[] buffer = new byte[1024];
                 BufferedInputStream inTemp = new BufferedInputStream(new FileInputStream(file));
                 while ((count=inTemp.read(buffer, 0, buffer.length)) != -1) {
                     outStream.write(buffer, 0, count);
                 }
+            } else {
+                System.err.println("Error: Client (Client didn't answer)");
             }
+            
+            connectionSocket.close();
             
         } catch (UnknownHostException ex) {
             System.err.println("Error: Client (Don't know about host: " +
-                    Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
+                    clientToSend + "): " + ex.getMessage());
 
             client.output1.append("Failed to connect: Client is offline\n");
 
         } catch (IOException ex) {
             System.err.println("Error: Client (Couldn't get I/O for the connection to: " + 
-                    Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
+                    clientToSend + "): " + ex.getMessage());
 
             client.output1.append("Failed to connect: Client is offline\n");
 
@@ -140,19 +149,14 @@ class ClientTCPThread extends Thread{
 
     private void receiveFile() {
         try {
-            PrintWriter outPrint;
-            BufferedReader inBuffer;
-
-            inBuffer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            outPrint = new PrintWriter(socket.getOutputStream(), true);
-
-            String filename = inBuffer.readLine();
-
+            String filename = in.readLine();
+            
             if (filename != null){
-                outPrint.println("OK");
-
+                out.println("OK");
+                
+                System.out.println("Control: Receiveing file: " + filename);
+                
                 FileOutputStream fos = new FileOutputStream("download/" + filename);
-                BufferedOutputStream out = new BufferedOutputStream(fos);
 
                 byte[] buffer = new byte[1024];
                 int count;
@@ -162,7 +166,8 @@ class ClientTCPThread extends Thread{
                 }
 
                 fos.close();
-                
+            } else {
+                System.err.println("Error: Client (Filename can't be null)");
             }
 
             socket.close();
