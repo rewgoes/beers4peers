@@ -78,6 +78,10 @@ public class SupernodeList {
     public SupernodeList(){
         this.supernodes = new ArrayList<SupernodeInfo>();
     }
+    
+    public int size(){
+        return this.supernodes.size();
+    }
 
     //Add a new supernode to the application and inform other supernodes that a new supernode was added
     public String addSupernode(String supernodeAddress){

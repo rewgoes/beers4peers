@@ -280,17 +280,22 @@ public class Beers4Peers extends javax.swing.JFrame {
         // TODO add your handling code here:
         try {
             if (connectDisconnect.getText().equals("Connect")){
-                connectDisconnect.setText("Disconnect");
                 if (type.equals("client"))
-                    client.connect();
+                    if (client.connect())
+                        connectDisconnect.setText("Disconnect");
                 else
-                    supernode.connect();
+                    if (supernode.connect()){
+                        connectDisconnect.setText("Disconnect");
+                    }
             } else {
-                connectDisconnect.setText("Connect");
                 if (type.equals("client"))
-                    client.disconnect();
+                    if (client.disconnect()){
+                        connectDisconnect.setText("Connect");
+                    }
                 else
-                    supernode.disconnect();
+                    if (supernode.disconnect()){
+                        connectDisconnect.setText("Connect");
+                    }
             }
         } catch (IOException ex) {
             Logger.getLogger(Beers4Peers.class.getName()).log(Level.SEVERE, null, ex);

@@ -65,7 +65,7 @@ public class Supernode {
     }
 
     //Initialize supernode by calling its threads
-    public void connect() throws IOException {
+    public boolean connect() throws IOException {
         if (!connected){
             if(myAddress == null) this.getAddress();
 
@@ -85,14 +85,14 @@ public class Supernode {
 
                 output1.append("Failed to connect: Server is offline\n");
 
-                return;
+                return false;
             } catch (IOException ex) {
                 System.err.println("Error: Supernode (Couldn't get I/O for the connection to: " +
                         Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
 
                 output1.append("Failed to connect: Server is offline\n");
 
-                return;
+                return false;
             }
 
             String fromServer;
@@ -109,7 +109,7 @@ public class Supernode {
 
                 output1.append("Failed to connect: Server is offline\n");
 
-                return;
+                return false;
             }
             else {
 
@@ -135,6 +135,8 @@ public class Supernode {
                 tcpListener.start();
             }
         }
+        
+        return true;
     }
 
     //Control interface's buttons
@@ -196,7 +198,7 @@ public class Supernode {
     }
 
     //Disconnect from the application, setting all object to null or new
-    public void disconnect(){
+    public boolean disconnect(){
         Socket connectionSocket;
         PrintWriter out;
         BufferedReader in;
@@ -222,7 +224,15 @@ public class Supernode {
 
             //Supernode received file
             if(fromServer != null){
-                output1.append("Disconnected\n");
+                if (fromServer.equals("OK"))
+                    output1.append("Disconnected\n");
+                else // (fromServer.equals("disconnectionRefused"))
+                {
+                    System.out.println("Control: Could not disconnect, this is the last supernode");
+                    output1.append("Could not disconnect\n");
+                    
+                    return false;
+                }
             }
             
             files = new HashMap<String, String>();
@@ -234,6 +244,7 @@ public class Supernode {
             buttonsControl();
 
             tcpListener.closeSocket();
+            
 
         } catch (UnknownHostException ex) {
             System.err.println("Error: Client (Don't know about host: " +
@@ -246,6 +257,8 @@ public class Supernode {
 
             output1.append("Failed to connect: Faile to disconnect\n");
         }
+        
+        return true;
     }
 
 }

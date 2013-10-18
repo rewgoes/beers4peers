@@ -140,6 +140,13 @@ public class ServerThread extends Thread {
     private void disconnectSupernode() throws IOException {
 
         String supernode = socket.getInetAddress().toString().split("/")[1];
+        
+        //There is only one supernode
+        if(supernodeList.size() == 1){
+            outputLine = "disconnectionRefused";
+            out.println(outputLine);
+            return;
+        }
 
         //Call supernodeList, what controls the supernodeList and actions that need to be taken
         supernodeList.removeSupernode(supernode);

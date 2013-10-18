@@ -5,6 +5,7 @@ import java.io.*;
 import java.net.*;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import javax.swing.JTextArea;
 
@@ -52,7 +53,7 @@ public class Client {
     }
 
     //Initialize client by calling its threads and connecting it to server, finding a supernode
-    public void connect() throws IOException{
+    public boolean connect() throws IOException{
         if (!connected){
             //If client address is unknown, get its address
             if(myAddress == null) this.getAddress();
@@ -74,14 +75,14 @@ public class Client {
 
                 output1.append("Failed to connect: Server is offline\n");
 
-                return;
+                return false;
             } catch (IOException ex) {
                 System.err.println("Error: Client (Couldn't get I/O for the connection to: " +
                         Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
 
                 output1.append("Failed to connect: Server is offline\n");
 
-                return;
+                return false;
             }
 
             String fromServer;
@@ -104,12 +105,14 @@ public class Client {
 
                     output1.append("Failed to connect: Server is offline\n");
 
-                    return;
+                    return false;
                 }
 
                 supernode = fromServer;
 
                 fromUser = "OK";
+                
+                sendFilesToSupernode();
 
                 out.println(fromUser);
 
@@ -133,6 +136,8 @@ public class Client {
                 tcpListener.start();
             }
         }
+        
+        return true;
     }
 
     //This method only gets the client's local address
@@ -294,7 +299,7 @@ public class Client {
     }
 
     //Disconnect from the application, setting all object to null or new
-    public void disconnect() {
+    public boolean disconnect() {
         Socket connectionSocket;
         PrintWriter out;
         BufferedReader in;
@@ -324,11 +329,10 @@ public class Client {
             } else {
                 System.err.println("Error: Client (Supernode unresponsible)");
                 output1.append("Some problem ocurred with your supernode\n");
-                return;
+                return false;
             }
 
             supernode = null;
-            files = new HashMap<String, String>();
             output2.setText(null);
             connected = false;
 
@@ -347,6 +351,8 @@ public class Client {
 
             output1.append("Failed to disconnect\n");
         }
+        
+        return true;
 
     }
 
@@ -355,11 +361,47 @@ public class Client {
         output1.append("Supernode " + supernode + " disconnected" + "\n"
                 + "Trying to reconnect...\n");
         supernode = null;
-        files = new HashMap<String, String>(); //TODO: change it to preserve files previous uploaded and send again to the new supernode
         output2.setText(null);
         connected = false;
         tcpListener.closeSocket();
         this.connect();
+    }
+
+    private void sendFilesToSupernode() {
+        Socket connectionSocket;
+        PrintWriter out;
+        BufferedReader in;
+
+        try {
+            connectionSocket = new Socket();
+            connectionSocket.connect(new InetSocketAddress(supernode, Beers4Peers.PORT), 1000);
+            System.out.println("Control: Sending all files to supernode");
+            out = new PrintWriter(connectionSocket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+            
+            String filesToSend = "";
+            
+            Iterator<Map.Entry<String, String>> filesTemp = files.entrySet().iterator();
+            while (filesTemp.hasNext()) {
+                Map.Entry<String, String> file = filesTemp.next();
+                filesToSend = filesToSend.concat(file.getKey()+ "|");
+            }
+            
+            out.println("upload\n" + filesToSend);
+            
+            in.readLine();
+
+        } catch (UnknownHostException ex) {
+            System.err.println("Error: Client (Don't know about host: " +
+                    supernode + "): " + ex.getMessage());
+
+            output1.append("Failed to connect: Server is offline\n");
+        } catch (IOException ex) {
+            System.err.println("Error: Client (Couldn't get I/O for the connection to: " +
+                    supernode + "): " + ex.getMessage());
+
+            output1.append("Failed to connect: Server is offline\n");
+        }
     }
 
 

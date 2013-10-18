@@ -184,11 +184,17 @@ public class SupernodeTCPThread extends Thread{
     //Receive a file from client and add it to the hashtable
     private void receiveFile(String clientAddress) throws IOException {
         inputLine = in.readLine();
+        
+        if (inputLine != null){
+            String[] files = inputLine.split("\\|");
 
-        if(inputLine != null){
-            //Add file to the hashtable
-            supernode.files.put(inputLine, clientAddress);
+            for(int i = 0; i < files.length; i++){
+                if(supernode.files.put(files[i], clientAddress) != null){
+                    System.out.println("Control: File " + files[i] + " removed");
+                }
+            }
         }
+        
         outputLine = "OK";
 
         out.println(outputLine);
@@ -360,6 +366,4 @@ public class SupernodeTCPThread extends Thread{
                     Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
         }
     }
-
-    
 }
