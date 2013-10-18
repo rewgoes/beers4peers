@@ -303,6 +303,9 @@ public class Beers4Peers extends javax.swing.JFrame {
 
     /**
      * @param args the command line arguments
+     *
+     * The first argument is the address of the server the user want's to
+     * connect to, and the second is the port number of the server.
      */
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
@@ -313,7 +316,7 @@ public class Beers4Peers extends javax.swing.JFrame {
 
         //Check if argument's port is valid to the application
         if( args.length != 2 ){
-           System.out.println("usage: Beers4Peers address port");
+           System.err.println("Usage: Beers4Peers <address> <port>");
            return;
         }
 
@@ -323,7 +326,7 @@ public class Beers4Peers extends javax.swing.JFrame {
         SERVER_PORT = Integer.parseInt(args[1]);
 
         if (!(SERVER_PORT >= 49152 && SERVER_PORT <= 65535)){
-            System.out.println( "usage: Beers4Peers address port [49152-65535]" );
+            System.err.println( "Error: the port must be between 49152 and 65535." );
             return;
         }
 
