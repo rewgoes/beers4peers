@@ -31,7 +31,7 @@ public class Client {
     protected static String myAddress;
 
     //Control interface's button
-    private boolean[] buttonContol;
+    private boolean[] buttonControl;
 
     //Thread responsible to listen for connections
     private TCPListener tcpListener;
@@ -43,12 +43,12 @@ public class Client {
 
     //Hashtable of files, associates a filename to it absolute path
     protected Map<String, String> files;
-    
+
     //Client constructor, start as many objects as possible
-    public Client(JTextArea jTextArea1, JTextArea jTextArea2, boolean[] buttonContol) {
+    public Client(JTextArea jTextArea1, JTextArea jTextArea2, boolean[] buttonControl) {
         this.output1 = jTextArea1;
         this.output2 = jTextArea2;
-        this.buttonContol = buttonContol;
+        this.buttonControl = buttonControl;
         this.files = new HashMap<String, String>();
     }
 
@@ -62,6 +62,7 @@ public class Client {
             PrintWriter out;
             BufferedReader in;
 
+            // create new socket to connect to the server
             try {
                 connectionSocket = new Socket();
                 connectionSocket.connect(new InetSocketAddress(Beers4Peers.SERVER_ADDRESS, Beers4Peers.SERVER_PORT), 1000);
@@ -90,8 +91,10 @@ public class Client {
 
             fromUser = "client";
 
+            // send message to server
             out.println(fromUser);
 
+            // read the response
             fromServer = in.readLine();
 
             if(fromServer == null){
@@ -111,7 +114,7 @@ public class Client {
                 supernode = fromServer;
 
                 fromUser = "OK";
-                
+
                 sendFilesToSupernode();
 
                 out.println(fromUser);
@@ -136,7 +139,7 @@ public class Client {
                 tcpListener.start();
             }
         }
-        
+
         return true;
     }
 
@@ -174,17 +177,17 @@ public class Client {
     //Control interface's buttons
     private void buttonsControl(){
         if(connected){
-            buttonContol[0] = false;
-            buttonContol[1] = false;
-            buttonContol[2] = true;
-            buttonContol[3] = true;
-            buttonContol[4] = true;
+            buttonControl[0] = false;
+            buttonControl[1] = false;
+            buttonControl[2] = true;
+            buttonControl[3] = true;
+            buttonControl[4] = true;
         } else {
-            buttonContol[0] = false;
-            buttonContol[1] = false;
-            buttonContol[2] = false;
-            buttonContol[3] = false;
-            buttonContol[4] = true;
+            buttonControl[0] = false;
+            buttonControl[1] = false;
+            buttonControl[2] = false;
+            buttonControl[3] = false;
+            buttonControl[4] = true;
         }
     }
 
@@ -255,6 +258,7 @@ public class Client {
         System.out.println("Control: Asking for " + filename + " to " + this.supernode);
 
         try {
+            // connect via TCP to the supernode
             connectionSocket = new Socket();
             connectionSocket.connect(new InetSocketAddress(this.supernode, Beers4Peers.PORT), 1000);
             out = new PrintWriter(connectionSocket.getOutputStream(), true);
@@ -307,6 +311,7 @@ public class Client {
         System.out.println("Control: Trying to disconnect");
 
         try {
+            // connect to the supernode to send message to disconnect
             connectionSocket = new Socket();
             connectionSocket.connect(new InetSocketAddress(this.supernode, Beers4Peers.PORT), 1000);
             out = new PrintWriter(connectionSocket.getOutputStream(), true);
@@ -351,7 +356,7 @@ public class Client {
 
             output1.append("Failed to disconnect\n");
         }
-        
+
         return true;
 
     }
@@ -378,17 +383,17 @@ public class Client {
             System.out.println("Control: Sending all files to supernode");
             out = new PrintWriter(connectionSocket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
-            
+
             String filesToSend = "";
-            
+
             Iterator<Map.Entry<String, String>> filesTemp = files.entrySet().iterator();
             while (filesTemp.hasNext()) {
                 Map.Entry<String, String> file = filesTemp.next();
                 filesToSend = filesToSend.concat(file.getKey()+ "|");
             }
-            
+
             out.println("upload\n" + filesToSend);
-            
+
             in.readLine();
 
         } catch (UnknownHostException ex) {

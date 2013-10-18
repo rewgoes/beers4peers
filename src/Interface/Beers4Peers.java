@@ -17,15 +17,21 @@ import javax.swing.JFileChooser;
  */
 public class Beers4Peers extends javax.swing.JFrame {
 
+    // basic config
     public static final int PORT = 50001;
-    public static String SERVER_ADDRESS;
     public static int SERVER_PORT;
+    public static String SERVER_ADDRESS;
 
+    // the other nodes
     private Client client;
     private Supernode supernode;
-    private ButtonsControlThread control;
-    private boolean[] buttonContol;
 
+    // the ButtonsControlThread will manage which buttons are enabled and which
+    // are disabled, using the buttonControl array
+    private ButtonsControlThread control;
+    private boolean[] buttonControl;
+
+    // whether we are connected to client or supernode
     private String type;
 
 
@@ -33,6 +39,7 @@ public class Beers4Peers extends javax.swing.JFrame {
         initComponents();
 
         this.addWindowListener(new java.awt.event.WindowAdapter() {
+            // When closing the window, also disconnect from client or server
             @Override
             public void windowClosing(java.awt.event.WindowEvent windowEvent) {
                 if (!connectDisconnect.getText().equals("Connect") && !clientConnect.isEnabled()){
@@ -40,38 +47,41 @@ public class Beers4Peers extends javax.swing.JFrame {
                         if(client.disconnect())
                             System.exit(0);
                     }
-                    else
-                        if (supernode.disconnect()){
+                    else {
+                        if (supernode.disconnect())
                             System.exit(0);
-                        }
+                    }
                 }
             }
         });
 
-        //Each button n is related to the position n-1 in controlButton
-        //Please, if more buttons are added, change array's size
-        buttonContol = new boolean[5];
+        // Each button n is related to the position n-1 in buttonControl
+        // If more buttons are added, the array size must be increased
+        buttonControl = new boolean[5];
 
-        buttonContol[0] = true;
-        buttonContol[1] = true;
-        buttonContol[2] = false;
-        buttonContol[3] = false;
-        buttonContol[4] = false;
+        buttonControl[0] = true;
+        buttonControl[1] = true;
+        buttonControl[2] = false;
+        buttonControl[3] = false;
+        buttonControl[4] = false;
 
 
-        client = new Client(jTextArea1, jTextArea2, buttonContol);
-        supernode = new Supernode(jTextArea1, jTextArea2, buttonContol);
+        // instantiate client and supernode
+        client = new Client(jTextArea1, jTextArea2, buttonControl);
+        supernode = new Supernode(jTextArea1, jTextArea2, buttonControl);
 
-        control = new ButtonsControlThread(buttonContol, clientConnect, supernodeConnect, upload, download, connectDisconnect);
+        // startup the thread to control the buttons
+        control = new ButtonsControlThread(buttonControl, clientConnect, supernodeConnect, upload, download, connectDisconnect);
 
         control.start();
     }
 
+    // connect to client
     public void initClient() throws InterruptedException, SocketException{
 
         try {
             client.connect();
-            if (!buttonContol[0])
+            if (!buttonControl[0])
                 jLabel1.setText("Messages [Client]");
             type = "client";
         } catch (IOException ex) {
@@ -79,11 +89,12 @@ public class Beers4Peers extends javax.swing.JFrame {
         }
     }
 
+    // connect to supernode
     public void initSupernode() throws InterruptedException, SocketException{
 
         try {
             supernode.connect();
-            if (!buttonContol[0])
+            if (!buttonControl[0])
                 jLabel1.setText("Messages [Supernode]");
             type = "supernode";
         } catch (IOException ex) {
