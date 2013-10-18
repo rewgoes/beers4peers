@@ -155,9 +155,9 @@ public class SupernodeTCPThread extends Thread{
 
             if (fromServer != null){
                 synchronized(this){
-                    supernode.clientList.removeClient(client);
-                    
                     removeFilesFrom(client);
+                    
+                    supernode.clientList.removeClient(client);
                     
                     supernode.output1.append("Client " + client + " disconnected\n");
                 }
@@ -295,7 +295,7 @@ public class SupernodeTCPThread extends Thread{
             if (file.getValue().equals(client)) {
                 files.remove();
                 System.out.println("Control: File " + file.getKey() + " removed");
-                filesToRemove.concat(file.getValue() + "|");
+                filesToRemove = filesToRemove.concat(file.getValue() + "|");
             }
         }
 
@@ -341,11 +341,13 @@ public class SupernodeTCPThread extends Thread{
     private void removeListOfFiles() {
         try {
             inputLine = in.readLine();
+            System.out.println("List of files: " + inputLine);
             
             if (inputLine != null){
                 String[] files = inputLine.split("|");
                 
                 for(int i = 0; i < files.length; i++){
+                    System.out.println("Looking for: " + files[i] + " to remove");
                     if(supernode.files.remove(files[i]) != null){
                         System.out.println("Control: File " + files[i] + " removed");
                     }
