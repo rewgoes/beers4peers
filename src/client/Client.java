@@ -4,7 +4,8 @@ import Interface.Beers4Peers;
 import java.io.*;
 import java.net.*;
 import java.util.Enumeration;
-import java.util.Hashtable;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.JTextArea;
 
 /**
@@ -40,14 +41,14 @@ public class Client {
     }
     
     //Hashtable of files, associates a filename to it absolute path
-    protected Hashtable<String, String> files;
+    protected Map<String, String> files;
     
     //Client constructor, start as many objects as possible
     public Client(JTextArea jTextArea1, JTextArea jTextArea2, boolean[] buttonContol) {
         this.output1 = jTextArea1;
         this.output2 = jTextArea2;
         this.buttonContol = buttonContol;
-        this.files = new Hashtable<String, String>();
+        this.files = new HashMap<String, String>();
     }
     
     //Initialize client by calling its threads and connecting it to server, finding a supernode
@@ -327,7 +328,7 @@ public class Client {
             }
             
             supernode = null;
-            files = new Hashtable<String, String>();
+            files = new HashMap<String, String>();
             output2.setText(null);
             connected = false;
             
@@ -354,7 +355,7 @@ public class Client {
         output1.append("Supernode " + supernode + " disconnected" + "\n"
                 + "Trying to reconnect...\n");
         supernode = null;
-        files = new Hashtable<String, String>(); //TODO: change it to preserve files previous uploaded and send again to the new supernode
+        files = new HashMap<String, String>(); //TODO: change it to preserve files previous uploaded and send again to the new supernode
         output2.setText(null);
         connected = false;
         tcpListener.closeSocket();

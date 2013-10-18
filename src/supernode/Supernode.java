@@ -13,8 +13,9 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.JTextArea;
 
 /**
@@ -44,7 +45,7 @@ public class Supernode {
     protected ClientList clientList;
     
     //Hashtable of files
-    protected Hashtable<String, String> files;
+    protected Map<String, String> files;
      
     //Thread responsible to listen for connections
     private TCPListener tcpListener;
@@ -58,7 +59,7 @@ public class Supernode {
         this.output2 = jTextArea2;
         this.buttonContol = buttonContol;
         this.clientList = new ClientList();
-        this.files = new Hashtable<String, String>();
+        this.files = new HashMap<String, String>();
         this.supernodes = new ArrayList<String>();
         
     }
@@ -224,7 +225,7 @@ public class Supernode {
                 output1.append("Disconnected\n");
             }
             
-            files = new Hashtable<String, String>();
+            files = new HashMap<String, String>();
             output2.setText(null);
             clientList = new ClientList();
             supernodes = new ArrayList<String>();

@@ -8,6 +8,8 @@ import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  *
@@ -68,6 +70,9 @@ public class SupernodeTCPThread extends Thread{
                         if(inputLine != null){
                             supernode.supernodes.remove(inputLine);
                             
+                            //Remove files from supernode
+                            removeFilesFrom(inputLine);
+                            
                             outputLine = "OK";
                     
                             out.println(outputLine);
@@ -92,6 +97,11 @@ public class SupernodeTCPThread extends Thread{
                     //If a client/supernode is requesting to download something
                     case "download":
                         findFileOwner();
+                        outputLine = "OK";
+                        out.println(outputLine);
+                        break;
+                    case "removeFiles":
+                        removeListOfFiles();
                         outputLine = "OK";
                         out.println(outputLine);
                         break;
@@ -146,6 +156,9 @@ public class SupernodeTCPThread extends Thread{
             if (fromServer != null){
                 synchronized(this){
                     supernode.clientList.removeClient(client);
+                    
+                    removeFilesFrom(client);
+                    
                     supernode.output1.append("Client " + client + " disconnected\n");
                 }
 
@@ -159,10 +172,10 @@ public class SupernodeTCPThread extends Thread{
             }
             
         } catch (UnknownHostException ex) {
-            System.err.println("Error: Client (Don't know about host: " +
+            System.err.println("Error: SupernodeTCHThread (Don't know about host: " +
                     Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
         } catch (IOException ex) {
-            System.err.println("Error: Client (Couldn't get I/O for the connection to: " + 
+            System.err.println("Error: SupernodeTCHThread (Couldn't get I/O for the connection to: " + 
                     Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
         }
     }
@@ -190,34 +203,34 @@ public class SupernodeTCPThread extends Thread{
     }
 
     //Send new file from client to all known supernodes, but now using supernode's address as argument
-    private void sendFile(String supernodeTemp, String filename) {
+    private void sendFile(String supernodeAddress, String filename) {
         Socket connectionSocket;
-        PrintWriter out;
-        BufferedReader in;
+        PrintWriter outTemp;
+        BufferedReader inTemp;
 
         try {
             connectionSocket = new Socket();
-            connectionSocket.connect(new InetSocketAddress(supernodeTemp, Beers4Peers.PORT), 1000);
-            out = new PrintWriter(connectionSocket.getOutputStream(), true);
-            in = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+            connectionSocket.connect(new InetSocketAddress(supernodeAddress, Beers4Peers.PORT), 1000);
+            outTemp = new PrintWriter(connectionSocket.getOutputStream(), true);
+            inTemp = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
             
             String fromServer;
             String fromUser;
 
             fromUser = "upload\n" + filename;
             
-            out.println(fromUser);
+            outTemp.println(fromUser);
             
             System.out.println("Control: Waiting supernode confirmation " + filename);
             
-            fromServer = in.readLine();
+            fromServer = inTemp.readLine();
                 
             
         } catch (UnknownHostException ex) {
-            System.err.println("Error: Client (Don't know about host: " +
+            System.err.println("Error: SupernodeTCHThread (Don't know about host: " +
                     Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
         } catch (IOException ex) {
-            System.err.println("Error: Client (Couldn't get I/O for the connection to: " + 
+            System.err.println("Error: SupernodeTCHThread (Couldn't get I/O for the connection to: " + 
                     Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
         }
     }
@@ -238,7 +251,7 @@ public class SupernodeTCPThread extends Thread{
                     Socket connectionSocket;
                     PrintWriter outTemp;
                     BufferedReader inTemp;
-
+                    
                     try {
                         connectionSocket = new Socket();
                         connectionSocket.connect(new InetSocketAddress(fileOwner, Beers4Peers.PORT), 1000);
@@ -259,14 +272,93 @@ public class SupernodeTCPThread extends Thread{
                         System.out.println("Control: Another node found file " + filename);
 
                     } catch (UnknownHostException ex) {
-                        System.err.println("Error: Client (Don't know about host: " +
+                        System.err.println("Error: SupernodeTCHThread (Don't know about host: " +
                                 Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
                     } catch (IOException ex) {
-                        System.err.println("Error: Client (Couldn't get I/O for the connection to: " + 
+                        System.err.println("Error: SupernodeTCHThread (Couldn't get I/O for the connection to: " + 
                                 Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
                     }
                 }
             }
         }
     }
+    
+    //Remove files from hashtable that is from client/supernode
+    private void removeFilesFrom(String client) {
+        String filesToRemove = "";
+
+        Iterator<Map.Entry<String, String>> files = supernode.files.entrySet().iterator();
+        while (files.hasNext()) {
+            Map.Entry<String, String> file = files.next();
+
+            // Remove entry if key is null or equals 0.
+            if (file.getValue().equals(client)) {
+                files.remove();
+                System.out.println("Control: File " + file.getKey() + " removed");
+                filesToRemove.concat(file.getValue() + "|");
+            }
+        }
+
+        //If its a file from client and not from a supernode, so spread it
+        if (supernode.clientList.contains(client)){
+            for(int i = 0; i < supernode.supernodes.size(); i++) {
+                //Send a message to all supernode so they can remove the file
+                callSupernodesToRemoveFile(supernode.supernodes.get(i), filesToRemove);
+            }
+        }
+    }
+    
+    private void callSupernodesToRemoveFile(String supernodeAddress, String filesNames) {
+        Socket connectionSocket;
+        PrintWriter outTemp;
+        BufferedReader inTemp;
+
+        try {
+            connectionSocket = new Socket();
+            connectionSocket.connect(new InetSocketAddress(supernodeAddress, Beers4Peers.PORT), 1000);
+            outTemp = new PrintWriter(connectionSocket.getOutputStream(), true);
+            inTemp = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+            
+            String fromServer;
+            String fromUser;
+
+            fromUser = "removeFiles\n" + filesNames;
+            
+            outTemp.println(fromUser);
+            
+            fromServer = inTemp.readLine();
+                
+        } catch (UnknownHostException ex) {
+            System.err.println("Error: SupernodeTCHThread (Don't know about host: " +
+                    Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
+        } catch (IOException ex) {
+            System.err.println("Error: SupernodeTCHThread (Couldn't get I/O for the connection to: " + 
+                    Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
+        }
+    }
+
+    //Remove all files that are within a list of files received
+    private void removeListOfFiles() {
+        try {
+            inputLine = in.readLine();
+            
+            if (inputLine != null){
+                String[] files = inputLine.split("|");
+                
+                for(int i = 0; i < files.length; i++){
+                    if(supernode.files.remove(files[i]) != null){
+                        System.out.println("Control: File " + files[i] + " removed");
+                    }
+                }
+            }
+        } catch (UnknownHostException ex) {
+            System.err.println("Error: SupernodeTCHThread (Don't know about host: " +
+                    Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
+        } catch (IOException ex) {
+            System.err.println("Error: SupernodeTCHThread (Couldn't get I/O for the connection to: " + 
+                    Beers4Peers.SERVER_ADDRESS + "): " + ex.getMessage());
+        }
+    }
+
+    
 }
