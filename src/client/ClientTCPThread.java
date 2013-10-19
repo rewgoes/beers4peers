@@ -2,7 +2,6 @@ package client;
 
 import Interface.Beers4Peers;
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -164,6 +163,8 @@ class ClientTCPThread extends Thread{
                 while((count=inStream.read(buffer, 0, buffer.length)) != -1){
                     fos.write(buffer, 0, count);
                 }
+                
+                client.output1.append("New file available: download/" + filename + "\n");
 
                 fos.close();
             } else {

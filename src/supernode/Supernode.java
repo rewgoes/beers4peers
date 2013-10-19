@@ -233,6 +233,8 @@ public class Supernode {
                     
                     return false;
                 }
+            } else {
+                return false;
             }
             
             files = new HashMap<String, String>();

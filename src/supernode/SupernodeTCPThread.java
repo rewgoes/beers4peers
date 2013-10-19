@@ -197,7 +197,7 @@ public class SupernodeTCPThread extends Thread{
 
         outputLine = "OK";
 
-        out.println(outputLine);;
+        out.println(outputLine);
 
         //If its a file from client and not from a supernode, so spread it
         if (supernode.clientList.contains(clientAddress))
@@ -323,6 +323,7 @@ public class SupernodeTCPThread extends Thread{
         }
     }
 
+    //Tell other supernode that they must remove some files
     private void callSupernodesToRemoveFile(String supernodeAddress, String filesNames) {
         Socket connectionSocket;
         PrintWriter outTemp;
@@ -363,6 +364,7 @@ public class SupernodeTCPThread extends Thread{
                 for(int i = 0; i < files.length; i++){
                     if(supernode.files.remove(files[i]) != null){
                         System.out.println("Control: File " + files[i] + " removed");
+                        supernode.output1.append("File " + files[i] + " removed\n");
                     }
                 }
             }
